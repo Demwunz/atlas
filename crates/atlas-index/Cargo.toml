@@ -1,0 +1,15 @@
+[package]
+name = "atlas-index"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Deep index with rkyv zero-copy serialization"
+repository.workspace = true
+
+[dependencies]
+atlas-core = { workspace = true }
+rkyv = { workspace = true }
+memmap2 = { workspace = true }
+serde = { workspace = true }
+anyhow = { workspace = true }

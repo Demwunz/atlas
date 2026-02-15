@@ -1,0 +1,12 @@
+[package]
+name = "atlas-treesit"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "tree-sitter integration and grammar loading"
+repository.workspace = true
+
+[dependencies]
+atlas-core = { workspace = true }
+anyhow = { workspace = true }
