@@ -1,7 +1,7 @@
 use crate::preset::Preset;
 use crate::{Cli, OutputFormat};
 use anyhow::Result;
-use atlas_core::ScoredFile;
+use atlas_core::{ScoredFile, TokenBudget};
 use atlas_render::JsonlWriter;
 use atlas_scanner::BundleBuilder;
 use atlas_score::HybridScorer;
@@ -11,7 +11,7 @@ pub fn run(
     task: &str,
     preset: Preset,
     max_bytes: Option<u64>,
-    _max_tokens: Option<u64>,
+    max_tokens: Option<u64>,
     min_score: Option<f64>,
     top: Option<usize>,
 ) -> Result<()> {
@@ -23,24 +23,32 @@ pub fn run(
     // Score files
     let scored = score_files(task, &bundle.files, preset);
 
-    // Apply filters
+    // Apply score filter
     let effective_min_score = min_score.unwrap_or(preset.default_min_score());
     let mut filtered: Vec<ScoredFile> = scored
         .into_iter()
         .filter(|f| f.score >= effective_min_score)
         .collect();
 
+    // Apply top-N filter
     if let Some(n) = top {
         filtered.truncate(n);
     }
 
-    // Output
+    // Enforce token budget
     let effective_max_bytes = max_bytes.unwrap_or(preset.default_max_bytes());
+    let budget = TokenBudget {
+        max_bytes: Some(effective_max_bytes),
+        max_tokens,
+    };
+    let budgeted = budget.enforce(&filtered);
+
+    // Output
     output_results(
         cli,
         task,
         preset,
-        &filtered,
+        &budgeted,
         bundle.file_count(),
         effective_max_bytes,
         effective_min_score,

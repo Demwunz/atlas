@@ -6,7 +6,7 @@ mod types;
 pub use error::AtlasError;
 pub use types::{
     Bundle, Chunk, ChunkKind, DeepIndex, FileEntry, FileInfo, FileRole, Language, ScoredFile,
-    SignalBreakdown, TermFreqs,
+    SignalBreakdown, TermFreqs, TokenBudget,
 };
 
 #[cfg(test)]
@@ -410,5 +410,81 @@ mod tests {
     fn chunk_kind_variants() {
         let kind = ChunkKind::Function;
         assert_eq!(format!("{kind:?}"), "Function");
+    }
+
+    // --- TokenBudget ---
+
+    fn make_scored(path: &str, tokens: u64, score: f64) -> ScoredFile {
+        ScoredFile {
+            path: path.to_string(),
+            score,
+            signals: SignalBreakdown::default(),
+            tokens,
+            language: Language::Rust,
+            role: FileRole::Implementation,
+        }
+    }
+
+    #[test]
+    fn budget_no_limits_returns_all() {
+        let files = vec![make_scored("a.rs", 100, 0.9), make_scored("b.rs", 200, 0.8)];
+        let budget = TokenBudget {
+            max_bytes: None,
+            max_tokens: None,
+        };
+        assert_eq!(budget.enforce(&files).len(), 2);
+    }
+
+    #[test]
+    fn budget_max_bytes_truncates() {
+        let files = vec![
+            make_scored("a.rs", 100, 0.9), // 400 bytes
+            make_scored("b.rs", 200, 0.8), // 800 bytes — cumulative 1200
+            make_scored("c.rs", 300, 0.7), // 1200 bytes — cumulative 2400
+        ];
+        let budget = TokenBudget {
+            max_bytes: Some(1000),
+            max_tokens: None,
+        };
+        let result = budget.enforce(&files);
+        // First file: 400 bytes (under 1000) ✓
+        // Second file: cumulative 1200 (over 1000) — stop
+        assert_eq!(result.len(), 1);
+    }
+
+    #[test]
+    fn budget_max_tokens_truncates() {
+        let files = vec![
+            make_scored("a.rs", 100, 0.9),
+            make_scored("b.rs", 200, 0.8),
+            make_scored("c.rs", 300, 0.7),
+        ];
+        let budget = TokenBudget {
+            max_bytes: None,
+            max_tokens: Some(250),
+        };
+        let result = budget.enforce(&files);
+        // First: 100 tokens ✓, second: cumulative 300 > 250 — stop
+        assert_eq!(result.len(), 1);
+    }
+
+    #[test]
+    fn budget_always_includes_first_file() {
+        let files = vec![make_scored("huge.rs", 10000, 0.9)];
+        let budget = TokenBudget {
+            max_bytes: Some(100),
+            max_tokens: None,
+        };
+        // First file always included even if it exceeds the budget
+        assert_eq!(budget.enforce(&files).len(), 1);
+    }
+
+    #[test]
+    fn budget_empty_input() {
+        let budget = TokenBudget {
+            max_bytes: Some(100),
+            max_tokens: Some(100),
+        };
+        assert!(budget.enforce(&[]).is_empty());
     }
 }

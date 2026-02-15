@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn rrf_single_ranking() {
-        let files = vec![
+        let files = [
             make_scored("a.rs", 3.0),
             make_scored("b.rs", 2.0),
             make_scored("c.rs", 1.0),
@@ -136,7 +136,6 @@ mod tests {
         let results = fusion.fuse(&[ranking]);
 
         assert_eq!(results.len(), 3);
-        // First file should have highest RRF score
         assert_eq!(results[0].path, "a.rs");
         assert_eq!(results[1].path, "b.rs");
         assert_eq!(results[2].path, "c.rs");
@@ -144,12 +143,12 @@ mod tests {
 
     #[test]
     fn rrf_two_rankings_agreement() {
-        let files1 = vec![
+        let files1 = [
             make_scored("a.rs", 3.0),
             make_scored("b.rs", 2.0),
             make_scored("c.rs", 1.0),
         ];
-        let files2 = vec![
+        let files2 = [
             make_scored("a.rs", 5.0),
             make_scored("b.rs", 4.0),
             make_scored("c.rs", 3.0),
@@ -161,7 +160,6 @@ mod tests {
         let fusion = RrfFusion::new();
         let results = fusion.fuse(&[r1, r2]);
 
-        // When both rankings agree, order should be preserved
         assert_eq!(results[0].path, "a.rs");
         assert_eq!(results[1].path, "b.rs");
         assert_eq!(results[2].path, "c.rs");
@@ -169,14 +167,12 @@ mod tests {
 
     #[test]
     fn rrf_two_rankings_disagreement() {
-        // Ranking 1: a, b, c
-        let files1 = vec![
+        let files1 = [
             make_scored("a.rs", 3.0),
             make_scored("b.rs", 2.0),
             make_scored("c.rs", 1.0),
         ];
-        // Ranking 2: c, b, a (opposite order)
-        let files2 = vec![
+        let files2 = [
             make_scored("c.rs", 3.0),
             make_scored("b.rs", 2.0),
             make_scored("a.rs", 1.0),
@@ -188,27 +184,20 @@ mod tests {
         let fusion = RrfFusion::new();
         let results = fusion.fuse(&[r1, r2]);
 
-        // b.rs is rank 2 in both lists, so it should benefit from consistent ranking
-        // a.rs: 1/(61) + 1/(63) = ~0.01639 + ~0.01587 = ~0.03226
-        // b.rs: 1/(62) + 1/(62) = ~0.01613 + ~0.01613 = ~0.03226
-        // c.rs: 1/(63) + 1/(61) = ~0.01587 + ~0.01639 = ~0.03226
-        // All roughly equal when disagreement is symmetric
         assert_eq!(results.len(), 3);
-        // All scores should be approximately equal
         let max = results[0].rrf_score;
         let min = results[2].rrf_score;
-        assert!((max - min) / max < 0.05); // Within 5%
+        assert!((max - min) / max < 0.05);
     }
 
     #[test]
     fn rrf_custom_k() {
-        let files = vec![make_scored("a.rs", 2.0), make_scored("b.rs", 1.0)];
+        let files = [make_scored("a.rs", 2.0), make_scored("b.rs", 1.0)];
         let ranking: Vec<&ScoredFile> = files.iter().collect();
 
         let fusion = RrfFusion::new().with_k(1.0);
         let results = fusion.fuse(&[ranking]);
 
-        // With k=1: a.rs gets 1/(1+0+1) = 0.5, b.rs gets 1/(1+1+1) = 0.333
         assert!(results[0].rrf_score > results[1].rrf_score);
         assert!((results[0].rrf_score - 0.5).abs() < 1e-10);
         assert!((results[1].rrf_score - 1.0 / 3.0).abs() < 1e-10);
@@ -229,13 +218,11 @@ mod tests {
             make_scored("c.rs", 1.0),
         ];
 
-        // Additional ranking that reverses the order
         let additional = vec![vec!["c.rs", "b.rs", "a.rs"]];
 
         let fusion = RrfFusion::new();
         fusion.fuse_scored(&mut base, &additional);
 
-        // All files should have updated RRF scores
         for file in &base {
             assert!(file.score > 0.0);
         }
@@ -248,15 +235,14 @@ mod tests {
         let fusion = RrfFusion::new();
         fusion.fuse_scored(&mut base, &[]);
 
-        // Scores should be unchanged
         assert_eq!(base[0].score, 3.0);
         assert_eq!(base[1].score, 2.0);
     }
 
     #[test]
     fn rrf_file_in_one_ranking_only() {
-        let files1 = vec![make_scored("a.rs", 2.0), make_scored("b.rs", 1.0)];
-        let files2 = vec![make_scored("c.rs", 2.0), make_scored("a.rs", 1.0)];
+        let files1 = [make_scored("a.rs", 2.0), make_scored("b.rs", 1.0)];
+        let files2 = [make_scored("c.rs", 2.0), make_scored("a.rs", 1.0)];
 
         let r1: Vec<&ScoredFile> = files1.iter().collect();
         let r2: Vec<&ScoredFile> = files2.iter().collect();
@@ -265,7 +251,6 @@ mod tests {
         let results = fusion.fuse(&[r1, r2]);
 
         assert_eq!(results.len(), 3);
-        // a.rs appears in both rankings so should have highest score
         assert_eq!(results[0].path, "a.rs");
     }
 }

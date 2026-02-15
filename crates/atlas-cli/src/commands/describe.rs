@@ -5,6 +5,7 @@ pub fn run(cli: &Cli) -> Result<()> {
     let description = serde_json::json!({
         "name": "atlas",
         "version": env!("CARGO_PKG_VERSION"),
+        "replaces": "repo-context",
         "commands": ["index", "query", "quick", "render", "explain", "describe"],
         "formats": ["jsonl", "json", "human"],
         "languages": [

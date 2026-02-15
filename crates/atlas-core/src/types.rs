@@ -398,3 +398,47 @@ pub struct TermFreqs {
     pub symbols: u32,
     pub body: u32,
 }
+
+/// Token budget configuration for query results.
+#[derive(Debug, Clone)]
+pub struct TokenBudget {
+    pub max_bytes: Option<u64>,
+    pub max_tokens: Option<u64>,
+}
+
+impl TokenBudget {
+    /// Enforce the token budget on a scored file list.
+    ///
+    /// Walks the sorted list in order, accumulating bytes and tokens.
+    /// Stops including files once either limit is exceeded.
+    /// Files are assumed to already be sorted by score (highest first).
+    pub fn enforce(&self, files: &[ScoredFile]) -> Vec<ScoredFile> {
+        let mut result = Vec::new();
+        let mut total_bytes: u64 = 0;
+        let mut total_tokens: u64 = 0;
+
+        for file in files {
+            let file_bytes = file.tokens * 4; // tokens = bytes / 4, so bytes = tokens * 4
+            let file_tokens = file.tokens;
+
+            if let Some(max_bytes) = self.max_bytes
+                && total_bytes + file_bytes > max_bytes
+                && !result.is_empty()
+            {
+                break;
+            }
+            if let Some(max_tokens) = self.max_tokens
+                && total_tokens + file_tokens > max_tokens
+                && !result.is_empty()
+            {
+                break;
+            }
+
+            total_bytes += file_bytes;
+            total_tokens += file_tokens;
+            result.push(file.clone());
+        }
+
+        result
+    }
+}
