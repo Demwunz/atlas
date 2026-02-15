@@ -9,7 +9,14 @@ repository.workspace = true
 
 [dependencies]
 atlas-core = { workspace = true }
+atlas-scanner = { workspace = true }
 rkyv = { workspace = true }
 memmap2 = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+rayon = { workspace = true }
 anyhow = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
