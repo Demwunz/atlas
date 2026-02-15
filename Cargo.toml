@@ -1,0 +1,14 @@
+[workspace]
+members = []
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Fazal Majid"]
+license = "MIT"
+description = "Fast codebase indexer and file selector for LLMs"
+repository = "https://github.com/demwunz/atlas"
+
+# Placeholder — no crates defined yet.
+# See docs/DELIVERY.md for the phased build plan.
