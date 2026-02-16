@@ -421,6 +421,8 @@ atlas index --deep
 
 This creates `.atlas/index.json` in your repository root.
 
+**Two-pass architecture:** Atlas indexes thousands of files but typically selects ~30 for your context window. Parsing every file with a full AST is wasted work. Instead, indexing uses fast regex chunking to extract function names, types, and imports — the same data BM25F scoring consumes. Tree-sitter's 18 language grammars remain compiled and available for a future enrichment pass that deep-parses only the files that win scoring. This is the same pattern used by Sourcegraph (search-based vs precise navigation), IntelliJ (stub index vs full PSI), and rust-analyzer (lazy parsing). On Kubernetes (28k files), this cuts indexing time in half.
+
 **Incremental updates:** When you re-run `atlas index --deep`, only files whose SHA-256 has changed get re-indexed. Unchanged files carry forward from the existing index. File processing runs in parallel across all available cores via `rayon`.
 
 **Supported languages for chunking (regex for indexing, tree-sitter for enrichment):**
