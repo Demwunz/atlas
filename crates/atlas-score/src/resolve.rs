@@ -3,6 +3,10 @@ use atlas_core::Language;
 use std::collections::HashMap;
 use std::path::Path;
 
+/// Directories whose contents should be excluded from the import graph.
+/// These are vendored/generated paths — external dependencies checked into the repo.
+const VENDORED_DIRS: &[&str] = &["vendor", "node_modules", "third_party"];
+
 /// Build a lookup from file stem and directory names to file paths.
 ///
 /// For `src/auth/handler.rs` we index: `"handler"` → `["src/auth/handler.rs"]`,
@@ -66,26 +70,42 @@ pub fn resolve_import(
         .collect()
 }
 
+/// Returns true if a path is under a vendored/generated directory.
+fn is_vendored(path: &str) -> bool {
+    path.split(['/', '\\'])
+        .any(|component| VENDORED_DIRS.contains(&component))
+}
+
 /// Build an ImportGraph from files with their content.
 ///
-/// 1. Extracts raw imports from each file
-/// 2. Builds a file stem index for resolution
-/// 3. Resolves imports to repo file paths
-/// 4. Constructs the directed graph
+/// Vendored/generated paths (vendor/, node_modules/, third_party/) are excluded
+/// from the graph entirely — they don't become nodes, don't appear in the file
+/// index, and can't receive PageRank. This prevents checked-in dependencies
+/// from dominating the structural signal.
 pub fn build_import_graph(
     file_imports: &[(String, Language, Vec<String>)],
     all_paths: &[&str],
 ) -> ImportGraph {
-    let file_index = build_file_index(all_paths);
+    // Filter out vendored paths before building the file index and graph
+    let non_vendored: Vec<&str> = all_paths
+        .iter()
+        .copied()
+        .filter(|p| !is_vendored(p))
+        .collect();
+
+    let file_index = build_file_index(&non_vendored);
     let mut graph = ImportGraph::new();
 
-    // Add all files as nodes
-    for path in all_paths {
+    // Add only non-vendored files as nodes
+    for path in &non_vendored {
         graph.add_node(path);
     }
 
-    // Resolve imports and add edges
+    // Resolve imports and add edges (only from non-vendored files)
     for (path, language, raw_imports) in file_imports {
+        if is_vendored(path) {
+            continue;
+        }
         for raw in raw_imports {
             let resolved = resolve_import(raw, path, *language, &file_index);
             for target in resolved {
@@ -389,6 +409,51 @@ mod tests {
         // External imports should not create edges
         assert_eq!(graph.node_count(), 1);
         assert_eq!(graph.edge_count(), 0);
+    }
+
+    #[test]
+    fn vendor_paths_excluded_from_graph() {
+        let all_paths = vec![
+            "cmd/main.go",
+            "pkg/handler.go",
+            "vendor/github.com/lib/strings.go",
+            "vendor/github.com/lib/reflect.go",
+            "node_modules/react/index.js",
+            "third_party/proto/types.go",
+        ];
+        let file_imports = vec![
+            (
+                "cmd/main.go".to_string(),
+                Language::Go,
+                vec!["handler".to_string(), "strings".to_string()],
+            ),
+            (
+                "vendor/github.com/lib/strings.go".to_string(),
+                Language::Go,
+                vec!["reflect".to_string()],
+            ),
+        ];
+
+        let graph = build_import_graph(&file_imports, &all_paths);
+
+        // Only non-vendored files should be nodes
+        assert_eq!(graph.node_count(), 2); // cmd/main.go, pkg/handler.go
+        // "strings" import should NOT resolve to vendor path
+        assert_eq!(graph.edge_count(), 1); // main → handler only
+
+        let scores = graph.normalized_pagerank();
+        assert!(scores.contains_key("pkg/handler.go"));
+        assert!(!scores.contains_key("vendor/github.com/lib/strings.go"));
+    }
+
+    #[test]
+    fn is_vendored_detects_vendor_dirs() {
+        assert!(is_vendored("vendor/github.com/lib/foo.go"));
+        assert!(is_vendored("node_modules/react/index.js"));
+        assert!(is_vendored("third_party/proto/types.go"));
+        assert!(!is_vendored("src/vendor_utils.go"));
+        assert!(!is_vendored("pkg/handler.go"));
+        assert!(!is_vendored("cmd/main.go"));
     }
 
     #[test]

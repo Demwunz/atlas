@@ -15,11 +15,11 @@ pub fn run(cli: &Cli) -> Result<()> {
     let metadata = std::fs::metadata(&index_path)?;
     let file_size = metadata.len();
 
-    let index = atlas_index::load(&root)?
-        .ok_or_else(|| anyhow::anyhow!("Failed to load index"))?;
+    let index = atlas_index::load(&root)?.ok_or_else(|| anyhow::anyhow!("Failed to load index"))?;
 
     // Collect language stats
-    let mut lang_counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    let mut lang_counts: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
     let mut total_chunks: usize = 0;
     let mut total_terms: usize = 0;
 
