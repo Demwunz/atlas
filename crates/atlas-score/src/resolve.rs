@@ -86,7 +86,12 @@ pub fn resolve_import(
         }
         Language::Python => resolve_python(raw_import, importing_file, &file_index.stem),
         Language::Go => resolve_go(raw_import, file_index),
-        Language::Java => resolve_java(raw_import, &file_index.stem),
+        Language::Java | Language::Kotlin => resolve_java(raw_import, &file_index.stem),
+        Language::C | Language::Cpp => {
+            resolve_c_include(raw_import, importing_file, &file_index.stem)
+        }
+        Language::Ruby => resolve_ruby(raw_import, importing_file, &file_index.stem),
+        Language::Swift => resolve_swift(raw_import, &file_index.stem),
         _ => Vec::new(),
     };
 
@@ -305,6 +310,89 @@ fn resolve_java(import_path: &str, file_index: &HashMap<String, Vec<String>>) ->
         .unwrap_or_default()
 }
 
+/// C/C++: resolve `#include "header.h"` paths.
+///
+/// Quoted includes are project-local. Resolve relative to the importing file's
+/// directory, then fall back to stem matching.
+fn resolve_c_include(
+    include_path: &str,
+    importing_file: &str,
+    file_index: &HashMap<String, Vec<String>>,
+) -> Vec<String> {
+    // Try resolving relative to the importing file's directory
+    let base = Path::new(importing_file).parent().unwrap_or(Path::new(""));
+    let resolved = base.join(include_path);
+    let resolved_str = resolved.to_string_lossy();
+
+    // Check if the resolved path matches any known file exactly
+    for files in file_index.values() {
+        for f in files {
+            if f == resolved_str.as_ref() {
+                return vec![f.clone()];
+            }
+        }
+    }
+
+    // Fall back to stem matching
+    let stem = Path::new(include_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("");
+    file_index
+        .get(&stem.to_lowercase())
+        .cloned()
+        .unwrap_or_default()
+}
+
+/// Ruby: resolve `require` and `require_relative`.
+///
+/// `require_relative` resolves relative to the importing file. Plain `require`
+/// matches against file stems.
+fn resolve_ruby(
+    import_path: &str,
+    importing_file: &str,
+    file_index: &HashMap<String, Vec<String>>,
+) -> Vec<String> {
+    // Extract the last path segment as stem for matching
+    let segment = import_path.rsplit('/').next().unwrap_or(import_path);
+    let stem_lower = segment.to_lowercase();
+
+    // For paths that look relative (contain / or start with .), try relative resolution
+    if import_path.contains('/') || import_path.starts_with('.') {
+        let base = Path::new(importing_file).parent().unwrap_or(Path::new(""));
+        let resolved = base.join(import_path);
+        let resolved_str = resolved.to_string_lossy();
+
+        // Try exact match with .rb extension
+        let candidates = file_index.get(&stem_lower).cloned().unwrap_or_default();
+        let near: Vec<String> = candidates
+            .iter()
+            .filter(|c| {
+                let c_no_ext = Path::new(c.as_str())
+                    .with_extension("")
+                    .to_string_lossy()
+                    .into_owned();
+                c_no_ext == resolved_str.as_ref()
+            })
+            .cloned()
+            .collect();
+        if !near.is_empty() {
+            return near;
+        }
+    }
+
+    // Fall back to stem matching
+    file_index.get(&stem_lower).cloned().unwrap_or_default()
+}
+
+/// Swift: match module name against file stems.
+fn resolve_swift(module: &str, file_index: &HashMap<String, Vec<String>>) -> Vec<String> {
+    file_index
+        .get(&module.to_lowercase())
+        .cloned()
+        .unwrap_or_default()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -481,6 +569,78 @@ mod tests {
             &idx,
         );
         assert!(result.contains(&"src/main/java/Utils.java".to_string()));
+    }
+
+    #[test]
+    fn resolve_c_include_relative() {
+        let paths = vec!["src/auth.h", "src/auth.c", "src/utils/helpers.h"];
+        let idx = build_file_index(&paths);
+
+        // #include "auth.h" from src/main.c → resolves to src/auth.h
+        let result = resolve_import("auth.h", "src/main.c", Language::C, &idx);
+        assert!(result.contains(&"src/auth.h".to_string()));
+    }
+
+    #[test]
+    fn resolve_c_include_subdirectory() {
+        let paths = vec!["src/utils/helpers.h", "src/main.c"];
+        let idx = build_file_index(&paths);
+
+        // #include "utils/helpers.h" from src/main.c
+        let result = resolve_import("utils/helpers.h", "src/main.c", Language::C, &idx);
+        assert!(result.contains(&"src/utils/helpers.h".to_string()));
+    }
+
+    #[test]
+    fn resolve_cpp_include_stem_fallback() {
+        let paths = vec!["include/myclass.hpp", "src/main.cpp"];
+        let idx = build_file_index(&paths);
+
+        // When relative path doesn't match, fall back to stem
+        let result = resolve_import("myclass.hpp", "src/main.cpp", Language::Cpp, &idx);
+        assert!(result.contains(&"include/myclass.hpp".to_string()));
+    }
+
+    #[test]
+    fn resolve_ruby_require() {
+        let paths = vec!["lib/auth.rb", "lib/handler.rb"];
+        let idx = build_file_index(&paths);
+
+        let result = resolve_import("auth", "lib/handler.rb", Language::Ruby, &idx);
+        assert!(result.contains(&"lib/auth.rb".to_string()));
+    }
+
+    #[test]
+    fn resolve_ruby_require_relative() {
+        let paths = vec!["lib/utils.rb", "lib/main.rb"];
+        let idx = build_file_index(&paths);
+
+        let result = resolve_import("./utils", "lib/main.rb", Language::Ruby, &idx);
+        assert!(result.contains(&"lib/utils.rb".to_string()));
+    }
+
+    #[test]
+    fn resolve_swift_module() {
+        let paths = vec!["Sources/Auth/Auth.swift", "Sources/App/App.swift"];
+        let idx = build_file_index(&paths);
+
+        // Swift imports are module names, matched against stems
+        let result = resolve_import("Auth", "Sources/App/App.swift", Language::Swift, &idx);
+        assert!(result.contains(&"Sources/Auth/Auth.swift".to_string()));
+    }
+
+    #[test]
+    fn resolve_kotlin_import() {
+        let paths = vec!["src/main/kotlin/AuthService.kt"];
+        let idx = build_file_index(&paths);
+
+        let result = resolve_import(
+            "com.example.auth.AuthService",
+            "src/main/kotlin/App.kt",
+            Language::Kotlin,
+            &idx,
+        );
+        assert!(result.contains(&"src/main/kotlin/AuthService.kt".to_string()));
     }
 
     #[test]

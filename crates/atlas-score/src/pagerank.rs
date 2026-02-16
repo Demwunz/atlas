@@ -161,7 +161,10 @@ pub fn extract_imports(content: &str, language: atlas_core::Language) -> Vec<Str
             extract_js_imports(content)
         }
         atlas_core::Language::Go => extract_go_imports(content),
-        atlas_core::Language::Java => extract_java_imports(content),
+        atlas_core::Language::Java | atlas_core::Language::Kotlin => extract_java_imports(content),
+        atlas_core::Language::C | atlas_core::Language::Cpp => extract_c_includes(content),
+        atlas_core::Language::Ruby => extract_ruby_imports(content),
+        atlas_core::Language::Swift => extract_swift_imports(content),
         _ => Vec::new(),
     }
 }
@@ -253,6 +256,79 @@ fn extract_java_imports(content: &str) -> Vec<String> {
             let path = rest.trim_end_matches(';').trim();
             if !path.is_empty() {
                 imports.push(path.to_string());
+            }
+        }
+    }
+    imports
+}
+
+fn extract_c_includes(content: &str) -> Vec<String> {
+    let mut imports = Vec::new();
+    for line in content.lines() {
+        let trimmed = line.trim();
+        // #include "local_header.h" — project-local includes (quoted)
+        // Skip <system_header.h> — those are system/external
+        if let Some(rest) = trimmed.strip_prefix("#include") {
+            let rest = rest.trim();
+            if rest.starts_with('"') {
+                let path = rest.trim_start_matches('"').split('"').next().unwrap_or("");
+                if !path.is_empty() {
+                    imports.push(path.to_string());
+                }
+            }
+        }
+    }
+    imports
+}
+
+fn extract_ruby_imports(content: &str) -> Vec<String> {
+    let mut imports = Vec::new();
+    for line in content.lines() {
+        let trimmed = line.trim();
+        // require "foo" or require 'foo'
+        if let Some(rest) = trimmed
+            .strip_prefix("require ")
+            .or_else(|| trimmed.strip_prefix("require_relative "))
+        {
+            let path = rest.trim().trim_matches(|c| c == '\'' || c == '"');
+            if !path.is_empty() {
+                imports.push(path.to_string());
+            }
+        }
+    }
+    imports
+}
+
+fn extract_swift_imports(content: &str) -> Vec<String> {
+    // Swift allows `import kind Module.Symbol` where kind is class/struct/enum/protocol/func/var/typealias
+    const SWIFT_IMPORT_KINDS: &[&str] = &[
+        "class",
+        "struct",
+        "enum",
+        "protocol",
+        "func",
+        "var",
+        "typealias",
+    ];
+
+    let mut imports = Vec::new();
+    for line in content.lines() {
+        let trimmed = line.trim();
+        // import Foundation / import UIKit / @testable import MyModule
+        let line_to_check = trimmed.strip_prefix("@testable ").unwrap_or(trimmed);
+        if let Some(rest) = line_to_check.strip_prefix("import ") {
+            let mut tokens = rest.split_whitespace();
+            let first = tokens.next().unwrap_or("");
+            // If the first token is a kind keyword, the module is the next token
+            let module = if SWIFT_IMPORT_KINDS.contains(&first) {
+                tokens.next().unwrap_or("")
+            } else {
+                first
+            };
+            if !module.is_empty() {
+                // Extract module name from qualified path (e.g., "CoreData.NSManagedObject" → "CoreData")
+                let module_name = module.split('.').next().unwrap_or(module);
+                imports.push(module_name.to_string());
             }
         }
     }
@@ -448,6 +524,80 @@ import static org.junit.Assert.assertEquals;
         assert!(imports.contains(&"com.example.auth.AuthService".to_string()));
         assert!(imports.contains(&"java.util.List".to_string()));
         assert!(imports.contains(&"org.junit.Assert.assertEquals".to_string()));
+    }
+
+    #[test]
+    fn extract_c_includes_basic() {
+        let code = r#"
+#include <stdio.h>
+#include "auth.h"
+#include "utils/helpers.h"
+"#;
+        let imports = extract_imports(code, atlas_core::Language::C);
+        // Only quoted includes (project-local)
+        assert!(imports.contains(&"auth.h".to_string()));
+        assert!(imports.contains(&"utils/helpers.h".to_string()));
+        // Angle-bracket includes (system) should be skipped
+        assert!(!imports.contains(&"stdio.h".to_string()));
+    }
+
+    #[test]
+    fn extract_cpp_includes_basic() {
+        let code = r#"
+#include <iostream>
+#include <vector>
+#include "myclass.hpp"
+#include "detail/impl.h"
+"#;
+        let imports = extract_imports(code, atlas_core::Language::Cpp);
+        assert!(imports.contains(&"myclass.hpp".to_string()));
+        assert!(imports.contains(&"detail/impl.h".to_string()));
+        assert!(!imports.contains(&"iostream".to_string()));
+        assert!(!imports.contains(&"vector".to_string()));
+    }
+
+    #[test]
+    fn extract_ruby_imports_basic() {
+        let code = r#"
+require 'json'
+require "auth/handler"
+require_relative "utils"
+require_relative "../helpers/crypto"
+"#;
+        let imports = extract_imports(code, atlas_core::Language::Ruby);
+        assert!(imports.contains(&"json".to_string()));
+        assert!(imports.contains(&"auth/handler".to_string()));
+        assert!(imports.contains(&"utils".to_string()));
+        assert!(imports.contains(&"../helpers/crypto".to_string()));
+    }
+
+    #[test]
+    fn extract_swift_imports_basic() {
+        let code = r#"
+import Foundation
+import UIKit
+@testable import MyModule
+import class CoreData.NSManagedObject
+"#;
+        let imports = extract_imports(code, atlas_core::Language::Swift);
+        assert!(imports.contains(&"Foundation".to_string()));
+        assert!(imports.contains(&"UIKit".to_string()));
+        assert!(imports.contains(&"MyModule".to_string()));
+        // "import class CoreData.NSManagedObject" → extracts "CoreData" (skips kind keyword)
+        assert!(imports.contains(&"CoreData".to_string()));
+    }
+
+    #[test]
+    fn extract_kotlin_imports_basic() {
+        let code = r#"
+import com.example.auth.AuthService
+import kotlinx.coroutines.launch
+import java.util.List
+"#;
+        let imports = extract_imports(code, atlas_core::Language::Kotlin);
+        assert!(imports.contains(&"com.example.auth.AuthService".to_string()));
+        assert!(imports.contains(&"kotlinx.coroutines.launch".to_string()));
+        assert!(imports.contains(&"java.util.List".to_string()));
     }
 
     #[test]
