@@ -33,31 +33,40 @@ pub fn run(cli: &Cli, deep: bool, force: bool) -> Result<()> {
             atlas_index::load(&root)?
         };
 
-        // Build fresh index
+        // Build index, skipping unchanged files when existing index is available
         let builder = IndexBuilder::new(&root);
-        let fresh_index = builder.build(&bundle.files)?;
+        let (index, reindexed) = builder.build(&bundle.files, existing.as_ref())?;
 
-        // Merge with existing or use fresh
-        let final_index = if let Some(existing) = existing {
-            let merged = atlas_index::merge_incremental(&existing, &fresh_index);
-            if !cli.is_quiet() {
-                eprintln!("Incremental update: {} files indexed", merged.total_docs);
-            }
-            merged
-        } else {
-            if !cli.is_quiet() {
-                eprintln!("Full index build: {} files indexed", fresh_index.total_docs);
-            }
-            fresh_index
-        };
-
-        atlas_index::save(&final_index, &root)?;
+        let is_incremental = existing.is_some();
+        let nothing_changed = is_incremental && reindexed == 0;
 
         if !cli.is_quiet() {
-            eprintln!(
-                "Index saved to {}",
-                atlas_index::index_path(&root).display()
-            );
+            if is_incremental {
+                eprintln!(
+                    "Incremental update: {} files indexed ({} changed)",
+                    index.total_docs, reindexed
+                );
+            } else {
+                eprintln!("Full index build: {} files indexed", index.total_docs);
+            }
+        }
+
+        if nothing_changed {
+            if !cli.is_quiet() {
+                eprintln!(
+                    "Index unchanged at {}",
+                    atlas_index::index_path(&root).display()
+                );
+            }
+        } else {
+            atlas_index::save(&index, &root)?;
+
+            if !cli.is_quiet() {
+                eprintln!(
+                    "Index saved to {}",
+                    atlas_index::index_path(&root).display()
+                );
+            }
         }
     }
 

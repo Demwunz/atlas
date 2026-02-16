@@ -58,7 +58,7 @@ mod tests {
 
         // Build index
         let builder = IndexBuilder::new(dir.path());
-        let index = builder.build(&files).unwrap();
+        let index = builder.build(&files, None).unwrap().0;
 
         assert_eq!(index.total_docs, 2);
         assert!(index.avg_doc_length > 0.0);
@@ -97,13 +97,13 @@ mod tests {
         fs::write(dir.path().join("a.rs"), "fn original() {}\n").unwrap();
         let files_v1 = vec![make_file_info("a.rs", "fn original() {}\n")];
         let builder = IndexBuilder::new(dir.path());
-        let index_v1 = builder.build(&files_v1).unwrap();
+        let index_v1 = builder.build(&files_v1, None).unwrap().0;
         save(&index_v1, dir.path()).unwrap();
 
         // Update file
         fs::write(dir.path().join("a.rs"), "fn updated() {}\n").unwrap();
         let files_v2 = vec![make_file_info("a.rs", "fn updated() {}\n")];
-        let index_v2 = builder.build(&files_v2).unwrap();
+        let index_v2 = builder.build(&files_v2, None).unwrap().0;
 
         // Load existing and merge
         let existing = load(dir.path()).unwrap().unwrap();

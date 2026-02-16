@@ -16,17 +16,41 @@ impl<'a> IndexBuilder<'a> {
     }
 
     /// Build a deep index from a list of scanned file metadata.
-    pub fn build(&self, files: &[FileInfo]) -> anyhow::Result<DeepIndex> {
-        // Process files in parallel
+    ///
+    /// When `existing` is provided, files whose SHA-256 matches the existing
+    /// entry are carried forward without re-reading or re-indexing.
+    ///
+    /// Returns `(index, reindexed_count)` — the number of files that were
+    /// actually re-indexed (0 means nothing changed).
+    pub fn build(
+        &self,
+        files: &[FileInfo],
+        existing: Option<&DeepIndex>,
+    ) -> anyhow::Result<(DeepIndex, usize)> {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        let reindexed = AtomicUsize::new(0);
+
+        // Process files in parallel, skipping unchanged files
         let entries: Vec<(String, FileEntry)> = files
             .par_iter()
             .filter_map(|info| {
+                // Skip unchanged files — carry forward existing entry
+                if let Some(existing) = existing
+                    && let Some(old_entry) = existing.files.get(&info.path)
+                    && old_entry.sha256 == info.sha256
+                {
+                    return Some((info.path.clone(), old_entry.clone()));
+                }
+
                 let full_path = self.root.join(&info.path);
                 let content = fs::read_to_string(&full_path).ok()?;
                 let entry = build_file_entry(info, &content);
+                reindexed.fetch_add(1, Ordering::Relaxed);
                 Some((info.path.clone(), entry))
             })
             .collect();
+
+        let reindexed_count = reindexed.load(Ordering::Relaxed);
 
         // Compute corpus-level stats
         let total_docs = entries.len() as u32;
@@ -47,13 +71,16 @@ impl<'a> IndexBuilder<'a> {
 
         let file_map: HashMap<String, FileEntry> = entries.into_iter().collect();
 
-        Ok(DeepIndex {
-            version: 1,
-            files: file_map,
-            avg_doc_length,
-            total_docs,
-            doc_frequencies,
-        })
+        Ok((
+            DeepIndex {
+                version: 1,
+                files: file_map,
+                avg_doc_length,
+                total_docs,
+                doc_frequencies,
+            },
+            reindexed_count,
+        ))
     }
 }
 
@@ -194,7 +221,7 @@ mod tests {
 
         let files = vec![make_file_info("main.rs", content)];
         let builder = IndexBuilder::new(dir.path());
-        let index = builder.build(&files).unwrap();
+        let index = builder.build(&files, None).unwrap().0;
 
         assert_eq!(index.total_docs, 1);
         assert!(index.files.contains_key("main.rs"));
@@ -208,7 +235,7 @@ mod tests {
 
         let files = vec![make_file_info("auth.rs", content)];
         let builder = IndexBuilder::new(dir.path());
-        let index = builder.build(&files).unwrap();
+        let index = builder.build(&files, None).unwrap().0;
 
         let entry = &index.files["auth.rs"];
         // "auth" should appear in filename field
@@ -230,7 +257,7 @@ mod tests {
 
         let files = vec![make_file_info("auth.rs", content)];
         let builder = IndexBuilder::new(dir.path());
-        let index = builder.build(&files).unwrap();
+        let index = builder.build(&files, None).unwrap().0;
 
         let entry = &index.files["auth.rs"];
         assert!(entry.chunks.len() >= 2);
@@ -263,7 +290,7 @@ mod tests {
             make_file_info("handler.rs", "fn handle() {}\nfn authenticate() {}\n"),
         ];
         let builder = IndexBuilder::new(dir.path());
-        let index = builder.build(&files).unwrap();
+        let index = builder.build(&files, None).unwrap().0;
 
         assert_eq!(index.total_docs, 2);
         // "authenticate" appears in both files
@@ -274,7 +301,7 @@ mod tests {
     fn index_empty_files() {
         let dir = tempfile::tempdir().unwrap();
         let builder = IndexBuilder::new(dir.path());
-        let index = builder.build(&[]).unwrap();
+        let index = builder.build(&[], None).unwrap().0;
 
         assert_eq!(index.total_docs, 0);
         assert!(index.files.is_empty());
@@ -288,7 +315,7 @@ mod tests {
 
         let files = vec![make_file_info("parser.rs", content)];
         let builder = IndexBuilder::new(dir.path());
-        let index = builder.build(&files).unwrap();
+        let index = builder.build(&files, None).unwrap().0;
 
         let entry = &index.files["parser.rs"];
         // "parse" should appear in symbols field from chunk name "parseHTTPResponse"
@@ -315,7 +342,7 @@ mod tests {
             ),
         ];
         let builder = IndexBuilder::new(dir.path());
-        let index = builder.build(&files).unwrap();
+        let index = builder.build(&files, None).unwrap().0;
 
         assert!(index.avg_doc_length > 0.0);
         assert_eq!(index.total_docs, 2);

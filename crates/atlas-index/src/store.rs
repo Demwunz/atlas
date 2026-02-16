@@ -263,7 +263,7 @@ mod tests {
 
         let files = vec![make_file_info("main.rs", content)];
         let builder = IndexBuilder::new(dir.path());
-        let index = builder.build(&files).unwrap();
+        let index = builder.build(&files, None).unwrap().0;
 
         save(&index, dir.path()).unwrap();
         let loaded = load(dir.path()).unwrap().unwrap();
@@ -313,10 +313,10 @@ mod tests {
             make_file_info("b.rs", content_b),
         ];
         let builder = IndexBuilder::new(dir.path());
-        let existing = builder.build(&files).unwrap();
+        let existing = builder.build(&files, None).unwrap().0;
 
         // Build fresh index (same content)
-        let fresh = builder.build(&files).unwrap();
+        let fresh = builder.build(&files, None).unwrap().0;
 
         let merged = merge_incremental(&existing, &fresh);
         assert_eq!(merged.total_docs, 2);
@@ -330,14 +330,14 @@ mod tests {
 
         let files_v1 = vec![make_file_info("a.rs", content_a)];
         let builder = IndexBuilder::new(dir.path());
-        let existing = builder.build(&files_v1).unwrap();
+        let existing = builder.build(&files_v1, None).unwrap().0;
 
         // Change file content
         let content_a2 = "fn a_updated() {}\n";
         fs::write(dir.path().join("a.rs"), content_a2).unwrap();
 
         let files_v2 = vec![make_file_info("a.rs", content_a2)];
-        let fresh = builder.build(&files_v2).unwrap();
+        let fresh = builder.build(&files_v2, None).unwrap().0;
 
         let merged = merge_incremental(&existing, &fresh);
         assert_eq!(merged.total_docs, 1);

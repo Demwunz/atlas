@@ -48,6 +48,11 @@ impl<'a> Scanner<'a> {
                 continue;
             }
 
+            // Skip Atlas's own data directory
+            if rel_path.starts_with(".atlas") {
+                continue;
+            }
+
             let rel_str = rel_path.to_string_lossy().to_string();
 
             // Get file metadata
