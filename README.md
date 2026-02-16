@@ -64,7 +64,7 @@ You end up manually selecting files, guessing what's relevant, and hoping you di
 
 - **Automatic file selection** — no manual cherry-picking
 - **Multi-signal scoring** — BM25F text search, heuristics, import graphs, git history, all fused with RRF
-- **Any file, any language** — indexes every file in your repo; tree-sitter AST chunking for 18 languages with regex fallback
+- **Any file, any language** — indexes every file in your repo; regex chunking for fast indexing across 18 languages, tree-sitter available for on-demand enrichment
 - **Token budgets** — `--max-bytes`, `--max-tokens`, `--min-score` for precise context control
 - **Incremental indexing** — only re-processes changed files via SHA-256 change detection
 - **Three output formats** — JSONL (pipes), JSON (APIs), human-readable (terminals)
@@ -423,7 +423,7 @@ This creates `.atlas/index.json` in your repository root.
 
 **Incremental updates:** When you re-run `atlas index --deep`, only files whose SHA-256 has changed get re-indexed. Unchanged files carry forward from the existing index. File processing runs in parallel across all available cores via `rayon`.
 
-**Supported languages for chunking (tree-sitter primary, regex fallback):**
+**Supported languages for chunking (regex for indexing, tree-sitter for enrichment):**
 
 | Language | Functions | Types | Imports | Impls |
 |----------|-----------|-------|---------|-------|
@@ -521,7 +521,7 @@ Atlas is a Cargo workspace with 7 focused crates:
 | `atlas-index` | Deep index builder, JSON serialization, incremental merge |
 | `atlas-score` | BM25F, heuristic, hybrid, PageRank, git recency, RRF fusion |
 | `atlas-render` | JSONL v0.3, JSON, human-readable output |
-| `atlas-treesit` | Code chunking (tree-sitter AST with regex fallback) |
+| `atlas-treesit` | Code chunking (regex for indexing, tree-sitter for enrichment) |
 | `atlas-cli` | clap CLI, presets, commands |
 
 ### Built with
@@ -529,7 +529,7 @@ Atlas is a Cargo workspace with 7 focused crates:
 - [Rust](https://www.rust-lang.org) (2024 edition)
 - [`clap`](https://docs.rs/clap) — CLI parsing
 - [`ignore`](https://docs.rs/ignore) — Gitignore-respecting file walking (from ripgrep)
-- [`tree-sitter`](https://docs.rs/tree-sitter) — AST-based code chunking (18 language grammars)
+- [`tree-sitter`](https://docs.rs/tree-sitter) — AST-based code enrichment (18 language grammars, on-demand for selected files)
 - [`rayon`](https://docs.rs/rayon) — Parallel file processing
 - [`serde`](https://docs.rs/serde) + [`serde_json`](https://docs.rs/serde_json) — Serialization
 - [`sha2`](https://docs.rs/sha2) — Content hashing
