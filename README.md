@@ -469,11 +469,11 @@ Benchmarked on Apple Silicon (M-series, release build).
 | Operation | Wall Clock | Peak RSS |
 |-----------|-----------|----------|
 | Shallow index | **1.8 s** | 72 MB |
-| Deep index (fresh build) | **4.4 s** | 1.4 GB |
-| Query (cached index) | **2.7 s** | 335 MB |
-| End-to-end `quick` | **16.3 s** | — |
+| Deep index (fresh build) | **3.6 s** | 805 MB |
+| End-to-end `quick` (cold) | **5.7 s** | 805 MB |
+| End-to-end `quick` (cached) | **4.8 s** | 1.2 GB |
 
-Deep indexing processes **27,827 source files** across all 18 supported languages in under 5 seconds — leveraging `rayon` for parallel file I/O and chunking. The generated index is 260 MB for the full Kubernetes codebase.
+Deep indexing processes **27,827 source files** across all 18 supported languages in under 4 seconds — leveraging `rayon` for parallel file I/O and chunking. The generated index is 144 MB (rkyv binary) for the full Kubernetes codebase. Incremental updates skip unchanged files via SHA-256 comparison and avoid re-serializing when nothing changed.
 
 Scoring and rendering are negligible — the bottleneck is file I/O.
 
