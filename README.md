@@ -372,7 +372,7 @@ Atlas combines multiple signals using Reciprocal Rank Fusion (RRF) to produce a 
 |--------|--------|-------------|
 | **BM25F** | 60% | Field-weighted text relevance (filename 5x, symbols 3x, body 1x) |
 | **Heuristic** | 40% | Path keywords, file role, depth penalty, well-known paths, file size |
-| **Import graph** | RRF fusion | PageRank over import/require relationships (6 languages: Rust, Python, JS, TS, Go, Java) |
+| **Import graph** | RRF fusion | PageRank over import/require relationships (16 languages) |
 | **Git recency** | structural | Commit frequency per file (90-day lookback) |
 | **File role** | classification | Boosts impl, penalizes generated/vendor |
 
@@ -517,6 +517,10 @@ Run benchmarks yourself:
 cargo bench -p atlas-cli
 ```
 
+### Polyglot and PageRank benchmarks
+
+See **[BENCHMARKS.md](BENCHMARKS.md)** for detailed results across Kubernetes (28k Go files), Discourse (16k Ruby+JS files), and Mastodon (9k Ruby+TS files) — including before/after comparisons of PageRank scoring on polyglot repos.
+
 <p align="right">(<a href="#atlas">back to top</a>)</p>
 
 ---
@@ -639,6 +643,7 @@ See [DELIVERY.md](docs/DELIVERY.md) for the full roadmap and [SPEC.md](docs/SPEC
 
 | Document | Description |
 |----------|-------------|
+| [BENCHMARKS](BENCHMARKS.md) | Performance and quality benchmarks across real-world repos |
 | [PRD](docs/PRD.md) | Product requirements — what Atlas is and who it's for |
 | [SPEC](docs/SPEC.md) | Technical specification — architecture, data formats, APIs |
 | [RESEARCH](docs/RESEARCH.md) | Rust migration analysis and crate evaluation |
