@@ -17,7 +17,7 @@ Set Padding 20
 Set TypingSpeed 40ms
 
 # Explain command shows signal breakdown
-Type 'topo explain "file scanning and hashing" --top 8'
+Type 'topo explain "file scanning and hashing" --format human --top 8'
 Sleep 300ms
 Enter
 Sleep 4s

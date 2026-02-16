@@ -29,12 +29,18 @@ Enter
 Sleep 3s
 
 # Run quick command — the star of the show
-Type 'topo quick "refactor the scoring engine" --format human'
+Type 'topo quick "refactor the scoring engine" --format human --top 10'
 Sleep 300ms
 Enter
 Sleep 4s
 
-# Show describe for machine-readable capabilities
+# Inspect the index for stats
+Type "topo inspect"
+Sleep 300ms
+Enter
+Sleep 3s
+
+# Show machine-readable capabilities
 Type "topo describe --format json"
 Sleep 300ms
 Enter

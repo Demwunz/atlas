@@ -28,10 +28,10 @@ Sleep 300ms
 Enter
 Sleep 4s
 
-# Step 3: Same query with JSONL for piping
-Type 'topo query "scoring engine" --format jsonl --top 5'
+# Step 3: Explain the score breakdown
+Type 'topo explain "scoring engine" --format human --top 5'
 Sleep 300ms
 Enter
-Sleep 3s
+Sleep 4s
 
 Sleep 2s
