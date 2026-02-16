@@ -53,7 +53,8 @@ impl<'a> Scanner<'a> {
                 continue;
             }
 
-            let rel_str = rel_path.to_string_lossy().to_string();
+            // Always use forward slashes for consistent cross-platform paths
+            let rel_str = rel_path.to_string_lossy().replace('\\', "/");
 
             // Get file metadata
             let metadata = match path.metadata() {
