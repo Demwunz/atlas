@@ -12,9 +12,6 @@ atlas-core = { workspace = true }
 atlas-scanner = { workspace = true }
 atlas-treesit = { workspace = true }
 rkyv = { workspace = true }
-memmap2 = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
 sha2 = { workspace = true }
 rayon = { workspace = true }
 anyhow = { workspace = true }

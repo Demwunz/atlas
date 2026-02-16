@@ -1,57 +1,26 @@
-use atlas_core::{Chunk, ChunkKind, DeepIndex, FileEntry, TermFreqs};
-use serde::{Deserialize, Serialize};
+use atlas_core::DeepIndex;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
 /// Default index file location relative to repo root.
 const INDEX_DIR: &str = ".atlas";
-const INDEX_FILE: &str = "index.json";
+const INDEX_FILE: &str = "index.bin";
 
-/// Serializable representation of the deep index.
-#[derive(Serialize, Deserialize)]
-struct StoredIndex {
-    version: u32,
-    total_docs: u32,
-    avg_doc_length: f64,
-    doc_frequencies: HashMap<String, u32>,
-    files: HashMap<String, StoredFileEntry>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct StoredFileEntry {
-    sha256: Vec<u8>,
-    doc_length: u32,
-    term_frequencies: HashMap<String, StoredTermFreqs>,
-    chunks: Vec<StoredChunk>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct StoredTermFreqs {
-    filename: u32,
-    symbols: u32,
-    body: u32,
-}
-
-#[derive(Serialize, Deserialize)]
-struct StoredChunk {
-    kind: String,
-    name: String,
-    start_line: u32,
-    end_line: u32,
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    content: String,
-}
-
-/// Save a DeepIndex to disk.
+/// Save a DeepIndex to disk using rkyv binary serialization.
 pub fn save(index: &DeepIndex, repo_root: &Path) -> anyhow::Result<()> {
-    let stored = to_stored(index);
     let dir = repo_root.join(INDEX_DIR);
     fs::create_dir_all(&dir)?;
 
-    let path = dir.join(INDEX_FILE);
-    let json = serde_json::to_vec(&stored)?;
-    fs::write(&path, json)?;
+    let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(index)
+        .map_err(|e| anyhow::anyhow!("rkyv serialize: {e}"))?;
+    fs::write(dir.join(INDEX_FILE), &bytes)?;
+
+    // Remove legacy JSON index if present
+    let legacy = dir.join("index.json");
+    if legacy.exists() {
+        let _ = fs::remove_file(legacy);
+    }
 
     Ok(())
 }
@@ -64,128 +33,14 @@ pub fn load(repo_root: &Path) -> anyhow::Result<Option<DeepIndex>> {
     }
 
     let bytes = fs::read(&path)?;
-    let stored: StoredIndex = serde_json::from_slice(&bytes)?;
-    Ok(Some(from_stored(stored)))
+    let index = rkyv::from_bytes::<DeepIndex, rkyv::rancor::Error>(&bytes)
+        .map_err(|e| anyhow::anyhow!("rkyv deserialize: {e}"))?;
+    Ok(Some(index))
 }
 
 /// Get the path to the index file.
 pub fn index_path(repo_root: &Path) -> std::path::PathBuf {
     repo_root.join(INDEX_DIR).join(INDEX_FILE)
-}
-
-fn to_stored(index: &DeepIndex) -> StoredIndex {
-    let files = index
-        .files
-        .iter()
-        .map(|(path, entry)| {
-            let stored_entry = StoredFileEntry {
-                sha256: entry.sha256.to_vec(),
-                doc_length: entry.doc_length,
-                term_frequencies: entry
-                    .term_frequencies
-                    .iter()
-                    .map(|(term, tf)| {
-                        (
-                            term.clone(),
-                            StoredTermFreqs {
-                                filename: tf.filename,
-                                symbols: tf.symbols,
-                                body: tf.body,
-                            },
-                        )
-                    })
-                    .collect(),
-                chunks: entry
-                    .chunks
-                    .iter()
-                    .map(|c| StoredChunk {
-                        kind: chunk_kind_to_str(c.kind),
-                        name: c.name.clone(),
-                        start_line: c.start_line,
-                        end_line: c.end_line,
-                        content: c.content.clone(),
-                    })
-                    .collect(),
-            };
-            (path.clone(), stored_entry)
-        })
-        .collect();
-
-    StoredIndex {
-        version: index.version,
-        total_docs: index.total_docs,
-        avg_doc_length: index.avg_doc_length,
-        doc_frequencies: index.doc_frequencies.clone(),
-        files,
-    }
-}
-
-fn from_stored(stored: StoredIndex) -> DeepIndex {
-    let files = stored
-        .files
-        .into_iter()
-        .map(|(path, entry)| {
-            let sha256: [u8; 32] = entry.sha256.try_into().unwrap_or([0u8; 32]);
-            let file_entry = FileEntry {
-                sha256,
-                doc_length: entry.doc_length,
-                term_frequencies: entry
-                    .term_frequencies
-                    .into_iter()
-                    .map(|(term, tf)| {
-                        (
-                            term,
-                            TermFreqs {
-                                filename: tf.filename,
-                                symbols: tf.symbols,
-                                body: tf.body,
-                            },
-                        )
-                    })
-                    .collect(),
-                chunks: entry
-                    .chunks
-                    .into_iter()
-                    .map(|c| Chunk {
-                        kind: str_to_chunk_kind(&c.kind),
-                        name: c.name,
-                        start_line: c.start_line,
-                        end_line: c.end_line,
-                        content: c.content,
-                    })
-                    .collect(),
-            };
-            (path, file_entry)
-        })
-        .collect();
-
-    DeepIndex {
-        version: stored.version,
-        total_docs: stored.total_docs,
-        avg_doc_length: stored.avg_doc_length,
-        doc_frequencies: stored.doc_frequencies,
-        files,
-    }
-}
-
-fn chunk_kind_to_str(kind: ChunkKind) -> String {
-    match kind {
-        ChunkKind::Function => "function".to_string(),
-        ChunkKind::Type => "type".to_string(),
-        ChunkKind::Impl => "impl".to_string(),
-        ChunkKind::Import => "import".to_string(),
-        ChunkKind::Other => "other".to_string(),
-    }
-}
-
-fn str_to_chunk_kind(s: &str) -> ChunkKind {
-    match s {
-        "function" => ChunkKind::Function,
-        "type" => ChunkKind::Type,
-        "impl" => ChunkKind::Impl,
-        "import" => ChunkKind::Import,
-        _ => ChunkKind::Other,
-    }
 }
 
 /// Perform an incremental update: merge new index data with an existing index.
@@ -238,7 +93,7 @@ pub fn merge_incremental(existing: &DeepIndex, fresh: &DeepIndex) -> DeepIndex {
 mod tests {
     use super::*;
     use crate::builder::IndexBuilder;
-    use atlas_core::{FileInfo, Language};
+    use atlas_core::{ChunkKind, FileInfo, Language};
 
     fn make_file_info(path: &str, content: &str) -> FileInfo {
         use sha2::{Digest, Sha256};
@@ -297,7 +152,27 @@ mod tests {
 
         save(&index, dir.path()).unwrap();
         assert!(dir.path().join(".atlas").exists());
-        assert!(dir.path().join(".atlas/index.json").exists());
+        assert!(dir.path().join(".atlas/index.bin").exists());
+    }
+
+    #[test]
+    fn roundtrip_preserves_chunks() {
+        let dir = tempfile::tempdir().unwrap();
+        let content = "pub fn authenticate(token: &str) -> bool {\n    !token.is_empty()\n}\n";
+        fs::write(dir.path().join("auth.rs"), content).unwrap();
+
+        let files = vec![make_file_info("auth.rs", content)];
+        let builder = IndexBuilder::new(dir.path());
+        let index = builder.build(&files, None).unwrap().0;
+
+        save(&index, dir.path()).unwrap();
+        let loaded = load(dir.path()).unwrap().unwrap();
+
+        let entry = &loaded.files["auth.rs"];
+        assert!(entry
+            .chunks
+            .iter()
+            .any(|c| c.kind == ChunkKind::Function && c.name == "authenticate"));
     }
 
     #[test]
@@ -346,16 +221,22 @@ mod tests {
     }
 
     #[test]
-    fn chunk_kind_roundtrip() {
-        for kind in [
-            ChunkKind::Function,
-            ChunkKind::Type,
-            ChunkKind::Impl,
-            ChunkKind::Import,
-            ChunkKind::Other,
-        ] {
-            let s = chunk_kind_to_str(kind);
-            assert_eq!(str_to_chunk_kind(&s), kind);
-        }
+    fn removes_legacy_json_index() {
+        let dir = tempfile::tempdir().unwrap();
+        let atlas_dir = dir.path().join(".atlas");
+        fs::create_dir_all(&atlas_dir).unwrap();
+        fs::write(atlas_dir.join("index.json"), b"{}").unwrap();
+
+        let index = DeepIndex {
+            version: 1,
+            files: HashMap::new(),
+            avg_doc_length: 0.0,
+            total_docs: 0,
+            doc_frequencies: HashMap::new(),
+        };
+
+        save(&index, dir.path()).unwrap();
+        assert!(!atlas_dir.join("index.json").exists());
+        assert!(atlas_dir.join("index.bin").exists());
     }
 }

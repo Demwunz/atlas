@@ -385,7 +385,7 @@ pub struct SignalBreakdown {
 }
 
 /// The deep index containing pre-computed term frequencies and chunks.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
 pub struct DeepIndex {
     pub version: u32,
     pub files: std::collections::HashMap<String, FileEntry>,
@@ -395,7 +395,7 @@ pub struct DeepIndex {
 }
 
 /// Per-file entry in the deep index.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
 pub struct FileEntry {
     pub sha256: [u8; 32],
     pub chunks: Vec<Chunk>,
@@ -404,7 +404,7 @@ pub struct FileEntry {
 }
 
 /// A code chunk extracted by tree-sitter or regex fallback.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
 pub struct Chunk {
     pub kind: ChunkKind,
     pub name: String,
@@ -414,7 +414,7 @@ pub struct Chunk {
 }
 
 /// The kind of code chunk.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
 pub enum ChunkKind {
     Function,
     Type,
@@ -424,7 +424,7 @@ pub enum ChunkKind {
 }
 
 /// Term frequency counts across different fields.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
 pub struct TermFreqs {
     pub filename: u32,
     pub symbols: u32,

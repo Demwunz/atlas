@@ -127,6 +127,9 @@ pub enum Command {
         top: usize,
     },
 
+    /// Inspect the index (file count, size, stats)
+    Inspect,
+
     /// Print machine-readable tool capabilities
     Describe,
 }
@@ -197,6 +200,9 @@ fn main() -> Result<()> {
         }
         Some(Command::Explain { ref task, top }) => {
             commands::explain::run(&cli, task, top)?;
+        }
+        Some(Command::Inspect) => {
+            commands::inspect::run(&cli)?;
         }
         Some(Command::Describe) => {
             commands::describe::run(&cli)?;
