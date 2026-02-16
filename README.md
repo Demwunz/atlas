@@ -9,6 +9,7 @@
   <img src="https://img.shields.io/badge/MCP-191919?style=flat-square&logo=anthropic&logoColor=white" alt="MCP" />
   <img src="https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white" alt="macOS" />
   <img src="https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black" alt="Linux" />
+  <img src="https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white" alt="Windows" />
 
 [Quickstart](#quickstart) · [MCP Server](#mcp-server) · [Commands](#commands) · [Scoring](#scoring-engine) · [Installation](#installation)
 
@@ -458,24 +459,24 @@ This creates `.atlas/index.bin` in your repository root.
 
 | Language | Functions | Types | Imports | Impls |
 |----------|-----------|-------|---------|-------|
-| Rust | `fn` | `struct`, `enum`, `trait`, `type` | `use` | `impl` |
-| Go | `func` | `type` | `import` | — |
-| Python | `def`, `async def` | `class` | `import`, `from` | — |
-| JavaScript | `function` | `class` | `import` | — |
-| TypeScript | `function` | `class`, `interface`, `type`, `enum` | `import` | — |
-| Java | methods | `class`, `interface`, `enum` | `import` | — |
-| Ruby | `def` | `class`, `module` | `require` | — |
-| C | functions | `struct`, `enum`, `union`, `typedef` | `#include` | — |
-| C++ | functions | `class`, `struct`, `enum`, `namespace` | `#include` | — |
-| Shell | functions | — | — | — |
-| Swift | `func` | `class`, `struct`, `enum`, `protocol` | `import` | — |
-| Kotlin | `fun` | `class`, `object` | `import` | — |
-| Scala | `def` | `class`, `trait`, `object` | `import` | — |
-| Haskell | functions | `data`, `newtype`, `type`, `class` | `import` | — |
-| Elixir | `def` | — | — | — |
-| Lua | `function` | — | — | — |
-| PHP | functions | `class`, `interface`, `trait`, `enum` | `use` | — |
-| R | functions | — | — | — |
+| <img src="https://cdn.simpleicons.org/rust/DEA584" height="14" /> Rust | `fn` | `struct`, `enum`, `trait`, `type` | `use` | `impl` |
+| <img src="https://cdn.simpleicons.org/go/00ADD8" height="14" /> Go | `func` | `type` | `import` | — |
+| <img src="https://cdn.simpleicons.org/python/3776AB" height="14" /> Python | `def`, `async def` | `class` | `import`, `from` | — |
+| <img src="https://cdn.simpleicons.org/javascript/F7DF1E" height="14" /> JavaScript | `function` | `class` | `import` | — |
+| <img src="https://cdn.simpleicons.org/typescript/3178C6" height="14" /> TypeScript | `function` | `class`, `interface`, `type`, `enum` | `import` | — |
+| <img src="https://cdn.simpleicons.org/openjdk/ED8B00" height="14" /> Java | methods | `class`, `interface`, `enum` | `import` | — |
+| <img src="https://cdn.simpleicons.org/ruby/CC342D" height="14" /> Ruby | `def` | `class`, `module` | `require` | — |
+| <img src="https://cdn.simpleicons.org/c/A8B9CC" height="14" /> C | functions | `struct`, `enum`, `union`, `typedef` | `#include` | — |
+| <img src="https://cdn.simpleicons.org/cplusplus/00599C" height="14" /> C++ | functions | `class`, `struct`, `enum`, `namespace` | `#include` | — |
+| <img src="https://cdn.simpleicons.org/gnubash/4EAA25" height="14" /> Shell | functions | — | — | — |
+| <img src="https://cdn.simpleicons.org/swift/F05138" height="14" /> Swift | `func` | `class`, `struct`, `enum`, `protocol` | `import` | — |
+| <img src="https://cdn.simpleicons.org/kotlin/7F52FF" height="14" /> Kotlin | `fun` | `class`, `object` | `import` | — |
+| <img src="https://cdn.simpleicons.org/scala/DC322F" height="14" /> Scala | `def` | `class`, `trait`, `object` | `import` | — |
+| <img src="https://cdn.simpleicons.org/haskell/5D4F85" height="14" /> Haskell | functions | `data`, `newtype`, `type`, `class` | `import` | — |
+| <img src="https://cdn.simpleicons.org/elixir/4B275F" height="14" /> Elixir | `def` | — | — | — |
+| <img src="https://cdn.simpleicons.org/lua/2C2D72" height="14" /> Lua | `function` | — | — | — |
+| <img src="https://cdn.simpleicons.org/php/777BB4" height="14" /> PHP | functions | `class`, `interface`, `trait`, `enum` | `use` | — |
+| <img src="https://cdn.simpleicons.org/r/276DC3" height="14" /> R | functions | — | — | — |
 
 <p align="right">(<a href="#atlas">back to top</a>)</p>
 
