@@ -6,7 +6,7 @@ pub fn run(cli: &Cli) -> Result<()> {
         "name": "atlas",
         "version": env!("CARGO_PKG_VERSION"),
         "replaces": "repo-context",
-        "commands": ["index", "query", "quick", "render", "explain", "describe"],
+        "commands": ["index", "query", "quick", "render", "explain", "inspect", "describe"],
         "formats": ["jsonl", "json", "human"],
         "languages": [
             "rust", "go", "python", "javascript", "typescript",
@@ -21,7 +21,7 @@ pub fn run(cli: &Cli) -> Result<()> {
         crate::OutputFormat::Human => {
             println!("atlas v{}", env!("CARGO_PKG_VERSION"));
             println!();
-            println!("Commands:  index, query, quick, render, explain, describe");
+            println!("Commands:  index, query, quick, render, explain, inspect, describe");
             println!("Formats:   jsonl, json, human");
             println!(
                 "Languages: rust, go, python, javascript, typescript, java, ruby, c, cpp, shell, swift, kotlin, scala, haskell, elixir, lua, php, r"

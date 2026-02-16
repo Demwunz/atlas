@@ -285,6 +285,34 @@ src/auth/mod.rs                                   0.7200   0.5100   0.5500     i
 | `task` | *(required)* | Task description |
 | `--top` | `10` | Number of files to show |
 
+### `inspect` — Index statistics
+
+Shows metadata and statistics for the current index file.
+
+```bash
+atlas inspect
+```
+
+Example output:
+
+```
+Index: .atlas/index.bin
+Format: rkyv binary
+Size: 144.0 MB (150994944 bytes)
+Version: 1
+Files: 28358
+Chunks: 142891
+Unique terms: 89412
+Terms (file-level): 312044
+Avg doc length: 1523.4
+
+Files by extension:
+  .go             18923
+  .json            3412
+  .yaml            1205
+  ...
+```
+
 ### `describe` — Machine-readable capabilities
 
 Outputs a JSON description of Atlas's capabilities for agent discovery.
@@ -297,7 +325,7 @@ atlas describe --format json
 {
   "name": "atlas",
   "version": "0.1.0",
-  "commands": ["index", "query", "quick", "render", "explain", "describe"],
+  "commands": ["index", "query", "quick", "render", "explain", "inspect", "describe"],
   "formats": ["jsonl", "json", "human"],
   "languages": ["rust", "go", "python", "javascript", "typescript", "java", "ruby", "c", "cpp"],
   "scoring": ["heuristic", "content", "hybrid"],
@@ -419,7 +447,7 @@ Build one with:
 atlas index --deep
 ```
 
-This creates `.atlas/index.json` in your repository root.
+This creates `.atlas/index.bin` in your repository root.
 
 **Two-pass architecture:** Atlas indexes thousands of files but typically selects ~30 for your context window. Parsing every file with a full AST is wasted work. Instead, indexing uses fast regex chunking to extract function names, types, and imports — the same data BM25F scoring consumes. Tree-sitter's 18 language grammars remain compiled and available for a future enrichment pass that deep-parses only the files that win scoring. This is the same pattern used by Sourcegraph (search-based vs precise navigation), IntelliJ (stub index vs full PSI), and rust-analyzer (lazy parsing). On Kubernetes (28k files), this cuts indexing time in half.
 
@@ -500,7 +528,7 @@ Atlas is a Cargo workspace with 7 focused crates:
               |            |            |
         +-----+-----+ +---+---+ +-----+-----+
         |  Scanner   | | Index | |  Scoring  |
-        |  (ignore)  | | (JSON)| |  Engine   |
+        |  (ignore)  | | (rkyv)| |  Engine   |
         +-----+-----+ +---+---+ +-----+-----+
               |            |            |
               |     +------+------+    |
@@ -520,7 +548,7 @@ Atlas is a Cargo workspace with 7 focused crates:
 |-------|---------|
 | `atlas-core` | Domain types, traits, errors, token budget |
 | `atlas-scanner` | File walking, gitignore, SHA-256 hashing |
-| `atlas-index` | Deep index builder, JSON serialization, incremental merge |
+| `atlas-index` | Deep index builder, rkyv serialization, incremental merge |
 | `atlas-score` | BM25F, heuristic, hybrid, PageRank, git recency, RRF fusion |
 | `atlas-render` | JSONL v0.3, JSON, human-readable output |
 | `atlas-treesit` | Code chunking (regex for indexing, tree-sitter for enrichment) |
