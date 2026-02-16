@@ -10,31 +10,9 @@
   <img src="https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white" alt="macOS" />
   <img src="https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black" alt="Linux" />
 
-<details>
-<summary>Table of Contents</summary>
-
-- [The Problem](#the-problem)
-- [How Atlas Helps](#how-atlas-helps)
-- [Quickstart](#quickstart)
-- [Installation](#installation)
-- [MCP Server](#mcp-server)
-- [Core Workflow](#core-workflow)
-- [Commands](#commands)
-- [Presets](#presets)
-- [Scoring Engine](#scoring-engine)
-- [Output Formats](#output-formats)
-- [Deep Indexing](#deep-indexing)
-- [Performance](#performance)
-- [Architecture](#architecture)
-- [Configuration Reference](#configuration-reference)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [Documentation](#documentation)
-- [License](#license)
-
-</details>
-
 ![Atlas demo](vhs/hero.gif)
+
+[Quickstart](#quickstart) · [MCP Server](#mcp-server) · [Commands](#commands) · [Scoring](#scoring-engine) · [Installation](#installation)
 
 </div>
 
