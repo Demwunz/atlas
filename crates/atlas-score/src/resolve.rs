@@ -7,12 +7,23 @@ use std::path::Path;
 /// These are vendored/generated paths — external dependencies checked into the repo.
 const VENDORED_DIRS: &[&str] = &["vendor", "node_modules", "third_party"];
 
-/// Build a lookup from file stem and directory names to file paths.
+/// Indexes for resolving import paths to repo files.
 ///
-/// For `src/auth/handler.rs` we index: `"handler"` → `["src/auth/handler.rs"]`,
-/// and for `src/auth/mod.rs` we also index `"auth"` → `["src/auth/mod.rs"]`.
-pub fn build_file_index(paths: &[&str]) -> HashMap<String, Vec<String>> {
-    let mut index: HashMap<String, Vec<String>> = HashMap::new();
+/// Two lookup strategies:
+/// - `stem`: file stem → files (e.g., `"handler"` → `["src/auth/handler.rs"]`)
+/// - `dir`: parent directory name → files within it (e.g., `"v1"` → `["api/core/v1/types.go"]`)
+///
+/// Most languages use the stem index. Go uses the dir index because Go imports
+/// reference packages (directories), not individual files.
+pub struct RepoIndex {
+    pub stem: HashMap<String, Vec<String>>,
+    pub dir: HashMap<String, Vec<String>>,
+}
+
+/// Build stem and directory indexes from file paths.
+pub fn build_file_index(paths: &[&str]) -> RepoIndex {
+    let mut stem_index: HashMap<String, Vec<String>> = HashMap::new();
+    let mut dir_index: HashMap<String, Vec<String>> = HashMap::new();
 
     for &path in paths {
         let p = Path::new(path);
@@ -20,7 +31,7 @@ pub fn build_file_index(paths: &[&str]) -> HashMap<String, Vec<String>> {
         // Index by file stem (e.g., "handler" from "src/auth/handler.rs")
         if let Some(stem) = p.file_stem().and_then(|s| s.to_str()) {
             let stem_lower = stem.to_lowercase();
-            index
+            stem_index
                 .entry(stem_lower.clone())
                 .or_default()
                 .push(path.to_string());
@@ -32,15 +43,31 @@ pub fn build_file_index(paths: &[&str]) -> HashMap<String, Vec<String>> {
                     .and_then(|d| d.file_name())
                     .and_then(|n| n.to_str())
             {
-                index
+                stem_index
                     .entry(parent.to_lowercase())
                     .or_default()
                     .push(path.to_string());
             }
         }
+
+        // Index by immediate parent directory name
+        // e.g., "api/core/v1/types.go" → dir["v1"] contains this file
+        if let Some(parent_name) = p
+            .parent()
+            .and_then(|d| d.file_name())
+            .and_then(|n| n.to_str())
+        {
+            dir_index
+                .entry(parent_name.to_lowercase())
+                .or_default()
+                .push(path.to_string());
+        }
     }
 
-    index
+    RepoIndex {
+        stem: stem_index,
+        dir: dir_index,
+    }
 }
 
 /// Resolve a single raw import to candidate repo file paths.
@@ -50,16 +77,16 @@ pub fn resolve_import(
     raw_import: &str,
     importing_file: &str,
     language: Language,
-    file_index: &HashMap<String, Vec<String>>,
+    file_index: &RepoIndex,
 ) -> Vec<String> {
     let candidates = match language {
-        Language::Rust => resolve_rust(raw_import, file_index),
+        Language::Rust => resolve_rust(raw_import, &file_index.stem),
         Language::JavaScript | Language::TypeScript => {
-            resolve_js(raw_import, importing_file, file_index)
+            resolve_js(raw_import, importing_file, &file_index.stem)
         }
-        Language::Python => resolve_python(raw_import, importing_file, file_index),
+        Language::Python => resolve_python(raw_import, importing_file, &file_index.stem),
         Language::Go => resolve_go(raw_import, file_index),
-        Language::Java => resolve_java(raw_import, file_index),
+        Language::Java => resolve_java(raw_import, &file_index.stem),
         _ => Vec::new(),
     };
 
@@ -221,13 +248,50 @@ fn resolve_python(
     }
 }
 
-/// Go: match last path segment against file stems.
-fn resolve_go(import_path: &str, file_index: &HashMap<String, Vec<String>>) -> Vec<String> {
-    let segment = import_path.rsplit('/').next().unwrap_or(import_path);
-    file_index
-        .get(&segment.to_lowercase())
-        .cloned()
-        .unwrap_or_default()
+/// Go: resolve by matching import path segments against directory structure.
+///
+/// Go imports reference packages (directories), not files. `"k8s.io/api/core/v1"`
+/// means "files inside a directory named `v1`". We use the directory index to find
+/// files whose parent directory matches the last import segment, then narrow using
+/// the penultimate segment for disambiguation.
+fn resolve_go(import_path: &str, index: &RepoIndex) -> Vec<String> {
+    let segments: Vec<&str> = import_path.rsplitn(3, '/').collect();
+    let last = segments.first().copied().unwrap_or("");
+    if last.is_empty() {
+        return Vec::new();
+    }
+
+    let last_lower = last.to_lowercase();
+
+    // Look up files whose parent directory matches the last segment
+    let dir_candidates = index.dir.get(&last_lower).cloned().unwrap_or_default();
+
+    if !dir_candidates.is_empty() {
+        // If we have a penultimate segment, prefer files where the grandparent matches
+        if let Some(&penultimate) = segments.get(1) {
+            let pen_lower = penultimate.to_lowercase();
+            let narrowed: Vec<String> = dir_candidates
+                .iter()
+                .filter(|path| {
+                    // Check if the path contains ".../penultimate/last/file"
+                    let p = Path::new(path.as_str());
+                    p.parent()
+                        .and_then(|d| d.parent())
+                        .and_then(|gp| gp.file_name())
+                        .and_then(|n| n.to_str())
+                        .is_some_and(|gp_name| gp_name.to_lowercase() == pen_lower)
+                })
+                .cloned()
+                .collect();
+            if !narrowed.is_empty() {
+                return narrowed;
+            }
+        }
+        return dir_candidates;
+    }
+
+    // Fallback: stem-based matching (for single-file packages or flat layouts)
+    index.stem.get(&last_lower).cloned().unwrap_or_default()
 }
 
 /// Java: match last segment of qualified name against file stems.
@@ -255,10 +319,10 @@ mod tests {
         ];
         let idx = build_file_index(&paths);
 
-        assert!(idx["auth"].contains(&"src/auth.rs".to_string()));
-        assert!(idx["auth"].contains(&"src/auth/mod.rs".to_string()));
-        assert!(idx["handler"].contains(&"src/handler.rs".to_string()));
-        assert!(idx["lib"].contains(&"src/lib.rs".to_string()));
+        assert!(idx.stem["auth"].contains(&"src/auth.rs".to_string()));
+        assert!(idx.stem["auth"].contains(&"src/auth/mod.rs".to_string()));
+        assert!(idx.stem["handler"].contains(&"src/handler.rs".to_string()));
+        assert!(idx.stem["lib"].contains(&"src/lib.rs".to_string()));
     }
 
     #[test]
@@ -267,9 +331,9 @@ mod tests {
         let idx = build_file_index(&paths);
 
         // "mod" stem entry
-        assert!(idx["mod"].contains(&"src/auth/mod.rs".to_string()));
+        assert!(idx.stem["mod"].contains(&"src/auth/mod.rs".to_string()));
         // parent directory "auth" entry
-        assert!(idx["auth"].contains(&"src/auth/mod.rs".to_string()));
+        assert!(idx.stem["auth"].contains(&"src/auth/mod.rs".to_string()));
     }
 
     #[test]
@@ -277,8 +341,8 @@ mod tests {
         let paths = vec!["src/components/index.ts"];
         let idx = build_file_index(&paths);
 
-        assert!(idx["index"].contains(&"src/components/index.ts".to_string()));
-        assert!(idx["components"].contains(&"src/components/index.ts".to_string()));
+        assert!(idx.stem["index"].contains(&"src/components/index.ts".to_string()));
+        assert!(idx.stem["components"].contains(&"src/components/index.ts".to_string()));
     }
 
     #[test]
@@ -319,17 +383,76 @@ mod tests {
     }
 
     #[test]
-    fn resolve_go_last_segment() {
-        let paths = vec!["pkg/http/handler.go"];
+    fn resolve_go_directory_based() {
+        // Go imports reference packages (directories), not files
+        let paths = vec![
+            "pkg/http/handler.go",
+            "pkg/http/server.go",
+            "internal/auth/auth.go",
+        ];
         let idx = build_file_index(&paths);
 
+        // "myapp/pkg/http" → last segment "http" matches directory "pkg/http/"
         let result = resolve_import("myapp/pkg/http", "cmd/main.go", Language::Go, &idx);
-        // "http" last segment doesn't match "handler" stem — no match expected
-        assert!(result.is_empty());
+        assert!(result.contains(&"pkg/http/handler.go".to_string()));
+        assert!(result.contains(&"pkg/http/server.go".to_string()));
 
-        // But matching the actual file stem works
-        let result2 = resolve_import("myapp/pkg/handler", "cmd/main.go", Language::Go, &idx);
-        assert!(result2.contains(&"pkg/http/handler.go".to_string()));
+        // "myapp/internal/auth" → matches files in "auth/" directory
+        let result2 = resolve_import("myapp/internal/auth", "cmd/main.go", Language::Go, &idx);
+        assert!(result2.contains(&"internal/auth/auth.go".to_string()));
+    }
+
+    #[test]
+    fn resolve_go_v1_stem_collision() {
+        // The core problem: "k8s.io/api/core/v1" should match files in a
+        // "v1/" directory, NOT files named "v1.yaml" or "v1.json"
+        let paths = vec![
+            "staging/src/k8s.io/api/core/v1/types.go",
+            "staging/src/k8s.io/api/core/v1/register.go",
+            "testdata/config/after/v1.yaml",
+            "testdata/openapi/v3/api/v1.json",
+        ];
+        let idx = build_file_index(&paths);
+
+        let result = resolve_import(
+            "k8s.io/api/core/v1",
+            "pkg/scheduler/scheduler.go",
+            Language::Go,
+            &idx,
+        );
+        // Should match Go files in the v1/ directory
+        assert!(result.contains(&"staging/src/k8s.io/api/core/v1/types.go".to_string()));
+        assert!(result.contains(&"staging/src/k8s.io/api/core/v1/register.go".to_string()));
+        // Should NOT match testdata files named v1.*
+        assert!(!result.contains(&"testdata/config/after/v1.yaml".to_string()));
+        assert!(!result.contains(&"testdata/openapi/v3/api/v1.json".to_string()));
+    }
+
+    #[test]
+    fn resolve_go_multi_segment_disambiguation() {
+        // Two packages both named "v1" but in different parent dirs
+        let paths = vec!["api/core/v1/types.go", "api/apps/v1/deployment.go"];
+        let idx = build_file_index(&paths);
+
+        // "k8s.io/api/core/v1" → penultimate "core" narrows to core/v1/
+        let result = resolve_import("k8s.io/api/core/v1", "cmd/main.go", Language::Go, &idx);
+        assert!(result.contains(&"api/core/v1/types.go".to_string()));
+        assert!(!result.contains(&"api/apps/v1/deployment.go".to_string()));
+
+        // "k8s.io/api/apps/v1" → penultimate "apps" narrows to apps/v1/
+        let result2 = resolve_import("k8s.io/api/apps/v1", "cmd/main.go", Language::Go, &idx);
+        assert!(result2.contains(&"api/apps/v1/deployment.go".to_string()));
+        assert!(!result2.contains(&"api/core/v1/types.go".to_string()));
+    }
+
+    #[test]
+    fn resolve_go_fallback_to_stem() {
+        // When there's no directory match, fall back to stem matching
+        let paths = vec!["pkg/handler.go"];
+        let idx = build_file_index(&paths);
+
+        let result = resolve_import("myapp/handler", "cmd/main.go", Language::Go, &idx);
+        assert!(result.contains(&"pkg/handler.go".to_string()));
     }
 
     #[test]
