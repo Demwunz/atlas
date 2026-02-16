@@ -1,9 +1,9 @@
-# Hero demo — end-to-end atlas showcase
+# Hero demo — end-to-end topo showcase
 # Generates: vhs/hero.gif
 
 Output vhs/hero.gif
 
-Require atlas
+Require topo
 
 Set Shell "bash"
 Set FontSize 16
@@ -17,25 +17,25 @@ Set Padding 20
 Set TypingSpeed 40ms
 
 # Show version
-Type "atlas --version"
+Type "topo --version"
 Sleep 300ms
 Enter
 Sleep 1s
 
 # Index the repo with deep mode
-Type "atlas index --deep"
+Type "topo index --deep"
 Sleep 300ms
 Enter
 Sleep 3s
 
 # Run quick command — the star of the show
-Type 'atlas quick "refactor the scoring engine" --format human'
+Type 'topo quick "refactor the scoring engine" --format human'
 Sleep 300ms
 Enter
 Sleep 4s
 
 # Show describe for machine-readable capabilities
-Type "atlas describe --format json"
+Type "topo describe --format json"
 Sleep 300ms
 Enter
 Sleep 3s

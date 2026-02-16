@@ -1,8 +1,8 @@
-# Claude Instructions for Atlas
+# Claude Instructions for Topo
 
 ## Project Overview
 
-Atlas is a Rust CLI that indexes codebases and selects the most relevant files for LLM context windows. It is a rewrite of [repo-context](https://github.com/demwunz/wobot) (Go).
+Topo is a Rust CLI that indexes codebases and selects the most relevant files for LLM context windows. It is a rewrite of [repo-context](https://github.com/demwunz/wobot) (Go).
 
 ## Canonical References
 
@@ -10,7 +10,7 @@ Atlas is a Rust CLI that indexes codebases and selects the most relevant files f
 - **How to build it**: [docs/SPEC.md](docs/SPEC.md)
 - **Build order**: [docs/DELIVERY.md](docs/DELIVERY.md) — 42 issues across 8 phases
 - **Research**: [docs/RESEARCH.md](docs/RESEARCH.md) — full Rust migration analysis
-- **Issues**: https://github.com/demwunz/atlas/issues
+- **Issues**: https://github.com/demwunz/topo/issues
 - **Project board**: https://github.com/users/Demwunz/projects/8
 
 ## Rust Conventions
@@ -29,13 +29,13 @@ Atlas is a Rust CLI that indexes codebases and selects the most relevant files f
 
 ```
 crates/
-├── atlas-core/     (domain types, traits, errors)
-├── atlas-scanner/  (file walking, gitignore, hashing)
-├── atlas-index/    (deep index: chunks, rkyv serialization)
-├── atlas-score/    (BM25F, heuristic, structural, RRF fusion)
-├── atlas-render/   (JSONL v0.3, JSON, human output)
-├── atlas-treesit/  (tree-sitter integration, grammar loading)
-└── atlas-cli/      (clap CLI, presets, commands)
+├── topo-core/     (domain types, traits, errors)
+├── topo-scanner/  (file walking, gitignore, hashing)
+├── topo-index/    (deep index: chunks, rkyv serialization)
+├── topo-score/    (BM25F, heuristic, structural, RRF fusion)
+├── topo-render/   (JSONL v0.3, JSON, human output)
+├── topo-treesit/  (tree-sitter integration, grammar loading)
+└── topo-cli/      (clap CLI, presets, commands)
 ```
 
 ## Key Dependencies

@@ -3,7 +3,7 @@
 
 Output vhs/render.gif
 
-Require atlas
+Require topo
 
 Set Shell "bash"
 Set FontSize 16
@@ -17,25 +17,25 @@ Set Padding 20
 Set TypingSpeed 40ms
 
 # Explain command shows signal breakdown
-Type 'atlas explain "file scanning and hashing" --top 8'
+Type 'topo explain "file scanning and hashing" --top 8'
 Sleep 300ms
 Enter
 Sleep 4s
 
 # Save JSONL to file then render it
-Type 'atlas query "file scanning" --format jsonl --top 5 > /tmp/selection.jsonl'
+Type 'topo query "file scanning" --format jsonl --top 5 > /tmp/selection.jsonl'
 Sleep 300ms
 Enter
 Sleep 2s
 
 # Render the saved selection as human-readable
-Type 'atlas render /tmp/selection.jsonl --format human'
+Type 'topo render /tmp/selection.jsonl --format human'
 Sleep 300ms
 Enter
 Sleep 3s
 
 # Render as JSON
-Type 'atlas render /tmp/selection.jsonl --format json'
+Type 'topo render /tmp/selection.jsonl --format json'
 Sleep 300ms
 Enter
 Sleep 3s

@@ -1,8 +1,8 @@
-# Atlas — Delivery Plan
+# Topo — Delivery Plan
 
 ## Overview
 
-Atlas is delivered in 8 phases, 42 issues total. Each phase builds on the previous one. Issues within a phase can often be parallelized.
+Topo is delivered in 8 phases, 42 issues total. Each phase builds on the previous one. Issues within a phase can often be parallelized.
 
 Phases 0-2 establish the foundation: workspace, CI, scanner, and scoring engine.
 Phases 3-4 add the deep index and full CLI.
@@ -74,16 +74,16 @@ Full CLI with all commands and presets.
 | Issue | Title | Size | Priority | Depends On | Labels |
 |-------|-------|------|----------|------------|--------|
 | #23 | CLI skeleton with clap (derive) + global flags | M | P0 | #1 | `phase-4`, `size-M`, `P0` |
-| #24 | `atlas index` command (shallow + deep modes) | M | P0 | #9, #22, #23 | `phase-4`, `size-M`, `P0` |
-| #25 | `atlas query` command (score + select + budget) | M | P0 | #14, #18, #23 | `phase-4`, `size-M`, `P0` |
-| #26 | `atlas quick` command (preset orchestration) | M | P0 | #24, #25 | `phase-4`, `size-M`, `P0` |
-| #27 | `atlas render` command (JSONL -> formatted context) | M | P0 | #7, #23 | `phase-4`, `size-M`, `P0` |
-| #28 | `atlas explain` command (score breakdown per file) | S | P1 | #25 | `phase-4`, `size-S`, `P1` |
-| #29 | `atlas describe` command (machine-readable capabilities) | S | P1 | #23 | `phase-4`, `size-S`, `P1` |
+| #24 | `topo index` command (shallow + deep modes) | M | P0 | #9, #22, #23 | `phase-4`, `size-M`, `P0` |
+| #25 | `topo query` command (score + select + budget) | M | P0 | #14, #18, #23 | `phase-4`, `size-M`, `P0` |
+| #26 | `topo quick` command (preset orchestration) | M | P0 | #24, #25 | `phase-4`, `size-M`, `P0` |
+| #27 | `topo render` command (JSONL -> formatted context) | M | P0 | #7, #23 | `phase-4`, `size-M`, `P0` |
+| #28 | `topo explain` command (score breakdown per file) | S | P1 | #25 | `phase-4`, `size-S`, `P1` |
+| #29 | `topo describe` command (machine-readable capabilities) | S | P1 | #23 | `phase-4`, `size-S`, `P1` |
 | #30 | Preset system: fast / balanced / deep / thorough | M | P0 | #26 | `phase-4`, `size-M`, `P0` |
 | #31 | Feature scopes: include/exclude globs from YAML | M | P1 | #5, #23 | `phase-4`, `size-M`, `P1` |
 
-**Exit criteria:** All 6 commands work end-to-end. Presets configure scoring depth correctly. `atlas quick "task" --preset balanced` produces correct JSONL output.
+**Exit criteria:** All 6 commands work end-to-end. Presets configure scoring depth correctly. `topo quick "task" --preset balanced` produces correct JSONL output.
 
 ## Phase 5: tree-sitter AST Chunking (3 issues)
 
@@ -119,9 +119,9 @@ Ship it.
 | #39 | cargo-dist GitHub Actions release workflow | M | P1 | #3 | `phase-7`, `size-M`, `P1` |
 | #40 | Homebrew formula (demwunz/homebrew-tap) | S | P1 | #39 | `phase-7`, `size-S`, `P1` |
 | #41 | Shell install script (curl \| sh) | S | P2 | #39 | `phase-7`, `size-S`, `P2` |
-| #42 | Wobot toolchain resolver: detect atlas binary | S | P1 | #26 | `phase-7`, `size-S`, `P1` |
+| #42 | Wobot toolchain resolver: detect topo binary | S | P1 | #26 | `phase-7`, `size-S`, `P1` |
 
-**Exit criteria:** Release workflow produces macOS and Linux binaries. Homebrew tap works. Wobot detects and prefers atlas over repo-context.
+**Exit criteria:** Release workflow produces macOS and Linux binaries. Homebrew tap works. Wobot detects and prefers topo over repo-context.
 
 ## Summary
 

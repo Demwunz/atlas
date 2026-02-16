@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Atlas installer — download the latest release binary.
+# Topo installer — download the latest release binary.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/demwunz/atlas/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/demwunz/topo/main/install.sh | bash
 #
 # Environment variables:
-#   ATLAS_VERSION   — specific version to install (default: latest)
-#   ATLAS_INSTALL   — installation directory (default: ~/.local/bin)
+#   TOPO_VERSION   — specific version to install (default: latest)
+#   TOPO_INSTALL   — installation directory (default: ~/.local/bin)
 
 set -euo pipefail
 
-REPO="demwunz/atlas"
-INSTALL_DIR="${ATLAS_INSTALL:-$HOME/.local/bin}"
+REPO="demwunz/topo"
+INSTALL_DIR="${TOPO_INSTALL:-$HOME/.local/bin}"
 
 detect_platform() {
     local os arch target
@@ -53,17 +53,17 @@ main() {
     local target version archive_name url tmp_dir
 
     target="$(detect_platform)"
-    version="${ATLAS_VERSION:-$(get_latest_version)}"
+    version="${TOPO_VERSION:-$(get_latest_version)}"
 
     if [ -z "$version" ]; then
         echo "Error: could not determine latest version." >&2
-        echo "Set ATLAS_VERSION explicitly, e.g.: ATLAS_VERSION=v0.1.0 $0" >&2
+        echo "Set TOPO_VERSION explicitly, e.g.: TOPO_VERSION=v0.1.0 $0" >&2
         exit 1
     fi
 
-    echo "Installing atlas ${version} for ${target}..."
+    echo "Installing topo ${version} for ${target}..."
 
-    archive_name="atlas-${version}-${target}.tar.gz"
+    archive_name="topo-${version}-${target}.tar.gz"
     url="https://github.com/${REPO}/releases/download/${version}/${archive_name}"
 
     tmp_dir="$(mktemp -d)"
@@ -76,11 +76,11 @@ main() {
     tar -xzf "${tmp_dir}/${archive_name}" -C "$tmp_dir"
 
     mkdir -p "$INSTALL_DIR"
-    mv "${tmp_dir}/atlas" "${INSTALL_DIR}/atlas"
-    chmod +x "${INSTALL_DIR}/atlas"
+    mv "${tmp_dir}/topo" "${INSTALL_DIR}/topo"
+    chmod +x "${INSTALL_DIR}/topo"
 
     echo ""
-    echo "atlas installed to ${INSTALL_DIR}/atlas"
+    echo "topo installed to ${INSTALL_DIR}/topo"
 
     if ! echo "$PATH" | tr ':' '\n' | grep -qx "$INSTALL_DIR"; then
         echo ""
@@ -89,7 +89,7 @@ main() {
     fi
 
     echo ""
-    "${INSTALL_DIR}/atlas" --version || true
+    "${INSTALL_DIR}/topo" --version || true
     echo "Done."
 }
 

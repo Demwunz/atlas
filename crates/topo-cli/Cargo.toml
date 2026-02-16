@@ -1,0 +1,39 @@
+[package]
+name = "topo-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "CLI interface for Topo codebase indexer"
+repository.workspace = true
+
+[[bin]]
+name = "topo"
+path = "src/main.rs"
+
+[dependencies]
+topo-core = { workspace = true }
+topo-scanner = { workspace = true }
+topo-index = { workspace = true }
+topo-score = { workspace = true }
+topo-render = { workspace = true }
+topo-treesit = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+rmcp = { workspace = true }
+schemars = { workspace = true }
+
+[[bench]]
+name = "pipeline"
+harness = false
+
+[dev-dependencies]
+tempfile = "3"
+serde_json = { workspace = true }
+topo-core = { workspace = true }
+topo-scanner = { workspace = true }
+topo-render = { workspace = true }
+topo-score = { workspace = true }

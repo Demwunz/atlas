@@ -5,4 +5,4 @@
 *.swp
 *.swo
 .repo-context-cache/
-.atlas-cache/
+.topo-cache/

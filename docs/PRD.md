@@ -1,4 +1,4 @@
-# Atlas — Product Requirements Document
+# Topo — Product Requirements Document
 
 ## 1. Problem Statement
 
@@ -10,11 +10,11 @@ Current approaches:
 - **Embedding-based search**: Requires external infrastructure (vector DBs, embedding APIs)
 - **repo-context (Go)**: Works well but hits performance ceiling at scale — gob deserialization takes 500ms+ on large repos, supports only 8 languages for AST chunking, binary is 15MB+
 
-Atlas solves this by providing a fast, standalone binary that indexes any codebase and selects the most relevant files using multiple scoring signals — all without external dependencies.
+Topo solves this by providing a fast, standalone binary that indexes any codebase and selects the most relevant files using multiple scoring signals — all without external dependencies.
 
 ## 2. Product Vision
 
-Atlas is the fastest way to answer: "Which files in this codebase are most relevant to this task?"
+Topo is the fastest way to answer: "Which files in this codebase are most relevant to this task?"
 
 It is purpose-built for LLM context windows: it scores, selects, and formats codebase context in a single pass, respecting token budgets and producing structured output that LLM agents can consume directly.
 
@@ -56,7 +56,7 @@ It is purpose-built for LLM context windows: it scores, selects, and formats cod
 
 ## 5. Non-Goals
 
-- **Not an IDE plugin** — Atlas is a CLI tool; IDE integration is for consumers to build
+- **Not an IDE plugin** — Topo is a CLI tool; IDE integration is for consumers to build
 - **Not a code search engine** — It selects files, not lines. Use ripgrep for line-level search.
 - **Not a replacement for grep/ripgrep** — Different purpose: selection vs search
 - **No LLM inference in the binary** — Scoring is algorithmic. Embeddings are optional via external HTTP.
@@ -107,12 +107,12 @@ After scoring, files are selected greedily by score until the token budget is ex
 
 ## 8. Compatibility
 
-Atlas is a drop-in replacement for repo-context:
+Topo is a drop-in replacement for repo-context:
 - Same CLI commands: index, query, render, explain, quick, describe
 - Same flags: --preset, --max-bytes, --max-tokens, --min-score, --rerank, --scoring
 - Same JSONL v0.3 output format: header/file/footer structure
-- Same feature scopes: .repo-context/features.yaml (also reads .atlas/features.yaml)
-- Same cache directory structure: .repo-context-cache/ (also uses .atlas-cache/)
+- Same feature scopes: .repo-context/features.yaml (also reads .topo/features.yaml)
+- Same cache directory structure: .repo-context-cache/ (also uses .topo-cache/)
 
 ## 9. Constraints
 

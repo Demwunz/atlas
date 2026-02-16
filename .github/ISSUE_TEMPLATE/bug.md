@@ -26,5 +26,5 @@ What actually happens.
 ## Environment
 
 - OS:
-- Atlas version:
+- Topo version:
 - Rust version:

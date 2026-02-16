@@ -88,113 +88,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "atlas-cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "atlas-core",
- "atlas-index",
- "atlas-render",
- "atlas-scanner",
- "atlas-score",
- "atlas-treesit",
- "clap",
- "rmcp",
- "schemars",
- "serde",
- "serde_json",
- "tempfile",
- "tokio",
-]
-
-[[package]]
-name = "atlas-core"
-version = "0.1.0"
-dependencies = [
- "rkyv",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "atlas-index"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "atlas-core",
- "atlas-scanner",
- "atlas-score",
- "atlas-treesit",
- "rayon",
- "rkyv",
- "sha2",
- "tempfile",
-]
-
-[[package]]
-name = "atlas-render"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "atlas-core",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "atlas-scanner"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "atlas-core",
- "ignore",
- "sha2",
- "tempfile",
-]
-
-[[package]]
-name = "atlas-score"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "atlas-core",
- "tempfile",
-]
-
-[[package]]
-name = "atlas-treesit"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "atlas-core",
- "tree-sitter",
- "tree-sitter-bash",
- "tree-sitter-c",
- "tree-sitter-cpp",
- "tree-sitter-css",
- "tree-sitter-elixir",
- "tree-sitter-go",
- "tree-sitter-haskell",
- "tree-sitter-html",
- "tree-sitter-java",
- "tree-sitter-javascript",
- "tree-sitter-json",
- "tree-sitter-kotlin-ng",
- "tree-sitter-lua",
- "tree-sitter-php",
- "tree-sitter-python",
- "tree-sitter-r",
- "tree-sitter-ruby",
- "tree-sitter-rust",
- "tree-sitter-scala",
- "tree-sitter-swift",
- "tree-sitter-toml-ng",
- "tree-sitter-typescript",
- "tree-sitter-yaml",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1160,9 +1053,9 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "syn"
-version = "2.0.115"
+version = "2.0.116"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e614ed320ac28113fa64972c4262d5dbc89deacdfd00c34a3e4cea073243c12"
+checksum = "3df424c70518695237746f84cede799c9c58fcb37450d7b23716568cc8bc69cb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1250,6 +1143,113 @@ dependencies = [
  "futures-sink",
  "pin-project-lite",
  "tokio",
+]
+
+[[package]]
+name = "topo-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "topo-core",
+ "topo-index",
+ "topo-render",
+ "topo-scanner",
+ "topo-score",
+ "topo-treesit",
+]
+
+[[package]]
+name = "topo-core"
+version = "0.1.0"
+dependencies = [
+ "rkyv",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "topo-index"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "rayon",
+ "rkyv",
+ "sha2",
+ "tempfile",
+ "topo-core",
+ "topo-scanner",
+ "topo-score",
+ "topo-treesit",
+]
+
+[[package]]
+name = "topo-render"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serde",
+ "serde_json",
+ "topo-core",
+]
+
+[[package]]
+name = "topo-scanner"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "ignore",
+ "sha2",
+ "tempfile",
+ "topo-core",
+]
+
+[[package]]
+name = "topo-score"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tempfile",
+ "topo-core",
+]
+
+[[package]]
+name = "topo-treesit"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "topo-core",
+ "tree-sitter",
+ "tree-sitter-bash",
+ "tree-sitter-c",
+ "tree-sitter-cpp",
+ "tree-sitter-css",
+ "tree-sitter-elixir",
+ "tree-sitter-go",
+ "tree-sitter-haskell",
+ "tree-sitter-html",
+ "tree-sitter-java",
+ "tree-sitter-javascript",
+ "tree-sitter-json",
+ "tree-sitter-kotlin-ng",
+ "tree-sitter-lua",
+ "tree-sitter-php",
+ "tree-sitter-python",
+ "tree-sitter-r",
+ "tree-sitter-ruby",
+ "tree-sitter-rust",
+ "tree-sitter-scala",
+ "tree-sitter-swift",
+ "tree-sitter-toml-ng",
+ "tree-sitter-typescript",
+ "tree-sitter-yaml",
 ]
 
 [[package]]
@@ -1541,9 +1541,9 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.23"
+version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "537dd038a89878be9b64dd4bd1b260315c1bb94f4d784956b81e27a088d9a09e"
+checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
 name = "unicode-xid"

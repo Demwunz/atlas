@@ -1,0 +1,15 @@
+[package]
+name = "topo-score"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "BM25F, heuristic, structural, and RRF fusion scoring"
+repository.workspace = true
+
+[dependencies]
+topo-core = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

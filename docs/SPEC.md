@@ -1,4 +1,4 @@
-# Atlas — Technical Specification
+# Topo — Technical Specification
 
 ## 1. Architecture Overview
 
@@ -14,16 +14,16 @@ Each stage is a separate module with clean interfaces. The CLI orchestrates the 
 ### Crate Layout (planned)
 
 ```
-atlas/
+topo/
 ├── Cargo.toml          (workspace root)
 ├── crates/
-│   ├── atlas-core/     (domain types, traits, errors)
-│   ├── atlas-scanner/  (file walking, gitignore, hashing)
-│   ├── atlas-index/    (deep index: chunks, rkyv serialization)
-│   ├── atlas-score/    (BM25F, heuristic, structural, RRF fusion)
-│   ├── atlas-render/   (JSONL v0.3, JSON, human output)
-│   ├── atlas-treesit/  (tree-sitter integration, grammar loading)
-│   └── atlas-cli/      (clap CLI, presets, commands)
+│   ├── topo-core/     (domain types, traits, errors)
+│   ├── topo-scanner/  (file walking, gitignore, hashing)
+│   ├── topo-index/    (deep index: chunks, rkyv serialization)
+│   ├── topo-score/    (BM25F, heuristic, structural, RRF fusion)
+│   ├── topo-render/   (JSONL v0.3, JSON, human output)
+│   ├── topo-treesit/  (tree-sitter integration, grammar loading)
+│   └── topo-cli/      (clap CLI, presets, commands)
 └── tests/              (integration tests)
 ```
 
@@ -129,12 +129,12 @@ Used for fast heuristic-only queries. Same format as output.
 {"TotalFiles":358,"TotalTokens":150000,"ScannedFiles":358}
 ```
 
-Stored in `.atlas-cache/<fingerprint>.jsonl`
+Stored in `.topo-cache/<fingerprint>.jsonl`
 
 ### 3.2 Deep Index (rkyv binary)
 Zero-copy deserialization via rkyv + memmap2. The index file is memory-mapped and accessed directly without parsing.
 
-Stored in `.atlas-cache/<fingerprint>.deep.rkyv`
+Stored in `.topo-cache/<fingerprint>.deep.rkyv`
 
 Key design decisions:
 - rkyv `Archive` derive on all index types
@@ -143,7 +143,7 @@ Key design decisions:
 - Checksum header for integrity verification
 
 ### 3.3 Incremental Updates
-On `atlas index`:
+On `topo index`:
 1. Scan all files, compute SHA-256 hashes
 2. Load existing deep index (if any)
 3. For each file: if hash unchanged, keep existing entry; if changed/new, re-chunk and re-index
@@ -237,26 +237,26 @@ For languages without tree-sitter grammars, a regex-based chunker extracts funct
 ### 6.2 Commands
 
 ```
-atlas index [--deep] [--force]
+topo index [--deep] [--force]
     Build or update the index. --deep includes AST chunking.
     --force rebuilds from scratch.
 
-atlas query <task> [--preset <p>] [--scoring <s>] [--max-bytes <n>]
+topo query <task> [--preset <p>] [--scoring <s>] [--max-bytes <n>]
                    [--max-tokens <n>] [--min-score <f>] [--rerank] [--top <n>]
     Score files against task description. Output JSONL selection.
     --preset: fast|balanced|deep|thorough (default: balanced)
     --scoring: heuristic|content|hybrid (default: hybrid)
 
-atlas quick <task> [--preset <p>] [flags...]
+topo quick <task> [--preset <p>] [flags...]
     One-shot: index + query. Accepts all query flags.
 
-atlas render <jsonl-file> [--max-tokens <n>]
+topo render <jsonl-file> [--max-tokens <n>]
     Convert JSONL selection to formatted LLM context.
 
-atlas explain <task> [--top <n>]
+topo explain <task> [--top <n>]
     Show score breakdown per file.
 
-atlas describe [--json]
+topo describe [--json]
     Machine-readable capabilities for agent discovery.
 ```
 
@@ -302,7 +302,7 @@ Colored table output with scores, paths, and token counts.
 ## 9. Configuration
 
 ### 9.1 Feature Scopes
-`.atlas/features.yaml` (also reads `.repo-context/features.yaml`):
+`.topo/features.yaml` (also reads `.repo-context/features.yaml`):
 ```yaml
 features:
   auth:
@@ -324,28 +324,28 @@ Built-in presets configure scoring depth:
 | thorough | deep + rerank | all | BM25F + heuristic + structural + embeddings |
 
 ### 9.3 Environment Variables
-- `ATLAS_ROOT`: Override repository root
-- `ATLAS_CACHE_DIR`: Override cache directory
-- `ATLAS_PRESET`: Default preset
+- `TOPO_ROOT`: Override repository root
+- `TOPO_CACHE_DIR`: Override cache directory
+- `TOPO_PRESET`: Default preset
 - `OLLAMA_HOST`: Ollama endpoint for embeddings (default: http://localhost:11434)
 - `OPENAI_API_KEY`: OpenAI API key for embeddings
 
 ## 10. Integration
 
 ### 10.1 Wobot Toolchain Resolver
-Wobot's toolchain routing (W4.3) will detect the `atlas` binary and prefer it over `repo-context` when available. The `wobot context` command will delegate to whichever binary is found first.
+Wobot's toolchain routing (W4.3) will detect the `topo` binary and prefer it over `repo-context` when available. The `wobot context` command will delegate to whichever binary is found first.
 
 ### 10.2 Pipe Detection
-When stdout is not a TTY, Atlas automatically:
+When stdout is not a TTY, Topo automatically:
 - Switches to JSONL output
 - Disables color
 - Suppresses progress bars
 
 ### 10.3 Agent Discovery
-`atlas describe --json` returns machine-readable capabilities:
+`topo describe --json` returns machine-readable capabilities:
 ```json
 {
-  "name": "atlas",
+  "name": "topo",
   "version": "0.1.0",
   "commands": ["index", "query", "quick", "render", "explain", "describe"],
   "formats": ["jsonl", "json", "human"],

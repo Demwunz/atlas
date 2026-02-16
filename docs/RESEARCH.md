@@ -1,6 +1,6 @@
-# Atlas: Rust Migration Research
+# Topo: Rust Migration Research
 
-> Research conducted February 14-15, 2026. This document preserves the full analysis from plan mode sessions investigating whether repo-context (a Go codebase indexer) should be rewritten in Rust. The conclusion: **rewrite in Rust as "Atlas"**.
+> Research conducted February 14-15, 2026. This document preserves the full analysis from plan mode sessions investigating whether repo-context (a Go codebase indexer) should be rewritten in Rust. The conclusion: **rewrite in Rust as "Topo"**.
 
 ---
 
@@ -836,7 +836,7 @@ Crates: `llama-cpp-2`, `llama_cpp`, `embellama`. Embedding support via GGUF mode
 
 ## Final Recommendation and Architecture Decisions
 
-### Verdict: Rewrite repo-context in Rust as "Atlas"
+### Verdict: Rewrite repo-context in Rust as "Topo"
 
 The strongest arguments are not raw speed (Go optimizations already handle that) but rather:
 
@@ -862,8 +862,8 @@ Embeddings help with semantic queries ("find the authentication logic" matching 
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Name | **Atlas** | Titan who held up the sky; short to type |
-| Repo | **demwunz/atlas** (standalone) | Decoupled from wobot monorepo |
+| Name | **Topo** | Titan who held up the sky; short to type |
+| Repo | **demwunz/topo** (standalone) | Decoupled from wobot monorepo |
 | CLI compat | **Drop-in replacement** | Same commands, flags, JSONL v0.3 output |
 | First release | **Full vision v1** | All features + improvements ship together |
 | Scoring | **BM25F + structural signals + RRF** | In-binary, no external deps |

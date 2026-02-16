@@ -56,7 +56,7 @@ Index builds are parallelized with `rayon`. The Kubernetes index is larger becau
 
 ### Incremental updates
 
-After modifying a single file and re-running `atlas index --deep`:
+After modifying a single file and re-running `topo index --deep`:
 
 | Repo | Changed Files | Wall Clock |
 |------|--------------|-----------|
@@ -205,7 +205,7 @@ On polyglot repos, the import graph captures **cross-language structure**:
 
 ## Import Extraction Coverage
 
-Atlas extracts imports from **16 programming languages** and resolves them to repo-local files. External/stdlib imports (no matching file in the repo) are automatically filtered out.
+Topo extracts imports from **16 programming languages** and resolves them to repo-local files. External/stdlib imports (no matching file in the repo) are automatically filtered out.
 
 | Language | Extraction Pattern | Resolution Strategy |
 |----------|--------------------|---------------------|
@@ -234,7 +234,7 @@ Atlas extracts imports from **16 programming languages** and resolves them to re
 
 ### Go-specific handling
 
-Go imports reference **packages (directories)**, not individual files. Atlas uses a dual-index strategy:
+Go imports reference **packages (directories)**, not individual files. Topo uses a dual-index strategy:
 
 - **Directory index:** maps parent directory names to contained files (e.g., `v1/` -> `[api/core/v1/types.go, ...]`)
 - **Multi-segment disambiguation:** when the last import segment is ambiguous (e.g., multiple `v1/` dirs), the penultimate segment narrows results (`core/v1` vs `apps/v1`)
@@ -258,19 +258,19 @@ git clone --depth 1 https://github.com/discourse/discourse.git /tmp/discourse-be
 git clone --depth 1 https://github.com/mastodon/mastodon.git /tmp/mastodon-bench
 
 # Index
-time atlas --root /tmp/k8s-bench index --deep
-time atlas --root /tmp/discourse-bench index --deep
-time atlas --root /tmp/mastodon-bench index --deep
+time topo --root /tmp/k8s-bench index --deep
+time topo --root /tmp/discourse-bench index --deep
+time topo --root /tmp/mastodon-bench index --deep
 
 # Inspect
-atlas --root /tmp/discourse-bench inspect
+topo --root /tmp/discourse-bench inspect
 
 # Compare balanced vs deep
-atlas --root /tmp/discourse-bench explain "authentication login session" --top 15 --preset balanced --format human
-atlas --root /tmp/discourse-bench explain "authentication login session" --top 15 --preset deep --format human
+topo --root /tmp/discourse-bench explain "authentication login session" --top 15 --preset balanced --format human
+topo --root /tmp/discourse-bench explain "authentication login session" --top 15 --preset deep --format human
 
 # Run your own queries
-atlas --root /tmp/mastodon-bench quick "notification push" --preset deep --format human
+topo --root /tmp/mastodon-bench quick "notification push" --preset deep --format human
 ```
 
 <p align="right">(<a href="#benchmarks">back to top</a>)</p>
@@ -279,6 +279,6 @@ atlas --root /tmp/mastodon-bench quick "notification push" --preset deep --forma
 
 <div align="center">
 
-**[Back to README](README.md) · [Report Bug](https://github.com/demwunz/atlas/issues) · [Request Feature](https://github.com/demwunz/atlas/issues)**
+**[Back to README](README.md) · [Report Bug](https://github.com/demwunz/topo/issues) · [Request Feature](https://github.com/demwunz/topo/issues)**
 
 </div>

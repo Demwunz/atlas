@@ -1,6 +1,6 @@
 <div align="center">
 
-# Atlas
+# Topo
 
 **Smart file selection for LLMs. One command to go from codebase to context.**
 
@@ -13,7 +13,7 @@
 
 [Quickstart](#quickstart) · [MCP Server](#mcp-server) · [Commands](#commands) · [Scoring](#scoring-engine) · [Installation](#installation)
 
-![Atlas demo](vhs/hero.gif)
+![Topo demo](vhs/hero.gif)
 
 </div>
 
@@ -25,7 +25,7 @@ LLMs need context to be useful. But most codebases are too large to fit in a pro
 
 You end up manually selecting files, guessing what's relevant, and hoping you didn't miss something important. Too little context and the LLM hallucinates. Too much and it loses focus.
 
-**Atlas fixes this.** One command. Indexes your repo, scores every file against your task, outputs exactly what the LLM needs — within your token budget.
+**Topo fixes this.** One command. Indexes your repo, scores every file against your task, outputs exactly what the LLM needs — within your token budget.
 
 ### Who is this for?
 
@@ -33,11 +33,11 @@ You end up manually selecting files, guessing what's relevant, and hoping you di
 - **Developers using AI assistants** who want better context without manual cherry-picking
 - **Teams building AI workflows** who need a fast, scriptable context pipeline
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
-## How Atlas Helps
+## How Topo Helps
 
 - **Automatic file selection** — no manual cherry-picking
 - **Multi-signal scoring** — BM25F text search, heuristics, import graphs, git history, all fused with RRF
@@ -47,7 +47,7 @@ You end up manually selecting files, guessing what's relevant, and hoping you di
 - **Three output formats** — JSONL (pipes), JSON (APIs), human-readable (terminals)
 - **Zero dependencies** — single static binary, no runtime deps
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -55,17 +55,17 @@ You end up manually selecting files, guessing what's relevant, and hoping you di
 
 ```bash
 # Install
-brew install demwunz/tap/atlas
+brew install demwunz/tap/topo
 
 # Get context for your task
-atlas quick "add health check endpoint"
+topo quick "add health check endpoint"
 ```
 
-That's it. Atlas indexes your repo, scores every file against your task, and outputs exactly the context an LLM needs.
+That's it. Topo indexes your repo, scores every file against your task, and outputs exactly the context an LLM needs.
 
-![atlas quick demo](vhs/quick.gif)
+![topo quick demo](vhs/quick.gif)
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -76,81 +76,81 @@ The standalone binary has no dependencies — download and run.
 **Homebrew (macOS / Linux):**
 
 ```bash
-brew install demwunz/tap/atlas
+brew install demwunz/tap/topo
 ```
 
 **Shell script:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/demwunz/atlas/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/demwunz/topo/main/install.sh | bash
 ```
 
 **From source (Rust 1.85+):**
 
 ```bash
-git clone https://github.com/demwunz/atlas.git
-cd atlas
-cargo install --path crates/atlas-cli
+git clone https://github.com/demwunz/topo.git
+cd topo
+cargo install --path crates/topo-cli
 ```
 
 **Verify installation:**
 
 ```bash
-atlas --version
-# atlas 0.1.0
+topo --version
+# topo 0.1.0
 ```
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
 ## MCP Server
 
-Use Atlas as an [MCP](https://modelcontextprotocol.io/) server in Claude Desktop, Cursor, Cline, or any MCP client. Exposes `atlas_query`, `atlas_explain`, and `atlas_index` as tools.
+Use Topo as an [MCP](https://modelcontextprotocol.io/) server in Claude Desktop, Cursor, Cline, or any MCP client. Exposes `topo_query`, `topo_explain`, and `topo_index` as tools.
 
 ```json
 {
   "mcpServers": {
-    "atlas": {
-      "command": "atlas",
+    "topo": {
+      "command": "topo",
       "args": ["--root", "/path/to/project", "mcp"]
     }
   }
 }
 ```
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
 ## Core Workflow
 
-Atlas has four main steps. Use `quick` to run them all at once, or each command individually for more control.
+Topo has four main steps. Use `quick` to run them all at once, or each command individually for more control.
 
 ```bash
 # 1. Index your repository
-atlas index                              # Shallow scan (fast)
-atlas index --deep                       # Deep index with AST chunking
+topo index                              # Shallow scan (fast)
+topo index --deep                       # Deep index with AST chunking
 
 # 2. Query for relevant files
-atlas query "refactor auth middleware"    # Score and select files
+topo query "refactor auth middleware"    # Score and select files
 
 # 3. Render context for an LLM
-atlas render selection.jsonl             # Convert selection to formatted output
+topo render selection.jsonl             # Convert selection to formatted output
 
 # 4. Understand scoring decisions
-atlas explain "auth middleware" --top 10  # Per-file score breakdown
+topo explain "auth middleware" --top 10  # Per-file score breakdown
 ```
 
 Or do it all in one shot:
 
 ```bash
-atlas quick "refactor auth middleware" --preset balanced
+topo quick "refactor auth middleware" --preset balanced
 ```
 
-![atlas workflow](vhs/query.gif)
+![topo workflow](vhs/query.gif)
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -162,16 +162,16 @@ Indexes, queries, and renders in a single step. Best for most users.
 
 ```bash
 # Default (balanced preset)
-atlas quick "refactor auth middleware"
+topo quick "refactor auth middleware"
 
 # Fast preset (shallow index, heuristic scoring)
-atlas quick "fix login bug" --preset fast
+topo quick "fix login bug" --preset fast
 
 # Human-readable output
-atlas quick "add retry logic" --format human
+topo quick "add retry logic" --format human
 
 # With token budget
-atlas quick "update API" --max-tokens 8000
+topo quick "update API" --max-tokens 8000
 ```
 
 | Flag | Default | Description |
@@ -185,7 +185,7 @@ atlas quick "update API" --max-tokens 8000
 | `--format` | `auto` | Output: `auto`, `json`, `jsonl`, `human` |
 | `--root` | `.` | Repository path |
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ### `index` — Build a cached index
 
@@ -193,13 +193,13 @@ Walks the repo, classifies every file, and optionally builds a deep index with A
 
 ```bash
 # Shallow index (fast, path-based metadata only)
-atlas index
+topo index
 
 # Deep index (adds AST chunks + term frequencies for BM25)
-atlas index --deep
+topo index --deep
 
 # Force rebuild from scratch
-atlas index --deep --force
+topo index --deep --force
 ```
 
 **Shallow vs deep:** A shallow index records file paths, sizes, languages, roles, and SHA-256 hashes. A deep index also parses source files into function-level chunks and pre-computes term frequencies. Deep mode is required for BM25F content scoring.
@@ -216,13 +216,13 @@ Takes a task description, scores every file, and outputs a selection within your
 
 ```bash
 # Basic query
-atlas query "authentication middleware"
+topo query "authentication middleware"
 
 # With budget controls
-atlas query "fix rate limiter" --max-bytes 50000 --min-score 0.1 --top 20
+topo query "fix rate limiter" --max-bytes 50000 --min-score 0.1 --top 20
 
 # Different preset
-atlas query "add retry logic" --preset deep
+topo query "add retry logic" --preset deep
 ```
 
 | Flag | Default | Description |
@@ -240,10 +240,10 @@ Converts a JSONL selection file into human-readable or structured output.
 
 ```bash
 # Human-readable summary
-atlas render selection.jsonl --format human
+topo render selection.jsonl --format human
 
 # JSON output
-atlas render selection.jsonl --format json
+topo render selection.jsonl --format json
 ```
 
 | Flag | Default | Description |
@@ -257,8 +257,8 @@ atlas render selection.jsonl --format json
 Shows a table of selected files with their scores and signal breakdown.
 
 ```bash
-atlas explain "auth middleware" --top 10
-atlas explain "auth middleware" --preset deep --top 10  # includes PageRank
+topo explain "auth middleware" --top 10
+topo explain "auth middleware" --preset deep --top 10  # includes PageRank
 ```
 
 ![explain output](vhs/render.gif)
@@ -290,13 +290,13 @@ The `PR` column shows normalized PageRank scores (0–1) when using `deep` or `t
 Shows metadata and statistics for the current index file.
 
 ```bash
-atlas inspect
+topo inspect
 ```
 
 Example output:
 
 ```
-Index: .atlas/index.bin
+Index: .topo/index.bin
 Format: rkyv binary
 Size: 144.0 MB (150994944 bytes)
 Version: 2
@@ -315,15 +315,15 @@ Files by extension:
 
 ### `describe` — Machine-readable capabilities
 
-Outputs a JSON description of Atlas's capabilities for agent discovery.
+Outputs a JSON description of Topo's capabilities for agent discovery.
 
 ```bash
-atlas describe --format json
+topo describe --format json
 ```
 
 ```json
 {
-  "name": "atlas",
+  "name": "topo",
   "version": "0.1.0",
   "commands": ["index", "query", "quick", "render", "explain", "inspect", "describe"],
   "formats": ["jsonl", "json", "human"],
@@ -333,7 +333,7 @@ atlas describe --format json
 }
 ```
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -351,16 +351,16 @@ Presets configure index depth, scoring strategy, and budget in one flag.
 Explicit flags override preset values:
 
 ```bash
-atlas quick "auth" --preset fast --max-bytes 200000
+topo quick "auth" --preset fast --max-bytes 200000
 ```
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
 ## Scoring Engine
 
-Atlas combines multiple signals using Reciprocal Rank Fusion (RRF) to produce a single relevance score per file.
+Topo combines multiple signals using Reciprocal Rank Fusion (RRF) to produce a single relevance score per file.
 
 ### Signals
 
@@ -375,7 +375,7 @@ Atlas combines multiple signals using Reciprocal Rank Fusion (RRF) to produce a 
 ### How it works
 
 1. **Scan** — Walk the repo respecting `.gitignore`, classify language and role
-2. **Index** — Extract imports and compute PageRank scores at index time (stored in `.atlas/index.bin`, zero query-time cost)
+2. **Index** — Extract imports and compute PageRank scores at index time (stored in `.topo/index.bin`, zero query-time cost)
 3. **Score** — BM25F content matching + heuristic path analysis, blended 60/40
 4. **Fuse** — Structural signals (PageRank, git recency) combined with base ranking via RRF (`deep`/`thorough` presets)
 5. **Budget** — Enforce `--max-bytes` / `--max-tokens`, greedily including top files
@@ -383,7 +383,7 @@ Atlas combines multiple signals using Reciprocal Rank Fusion (RRF) to produce a 
 
 ### File roles
 
-Atlas classifies every file into a role that affects scoring:
+Topo classifies every file into a role that affects scoring:
 
 | Role | Examples | Effect |
 |------|----------|--------|
@@ -394,7 +394,7 @@ Atlas classifies every file into a role that affects scoring:
 | `build` | `Cargo.toml`, `Makefile` | Neutral |
 | `generated` | `vendor/`, `node_modules/`, `*.pb.go` | Heavily penalized |
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -414,7 +414,7 @@ Streaming format with header/body/footer. Each line is a self-contained JSON obj
 ### JSON (for APIs)
 
 ```bash
-atlas query "auth" --format json
+topo query "auth" --format json
 ```
 
 Returns a single JSON object with all results.
@@ -422,16 +422,16 @@ Returns a single JSON object with all results.
 ### Human-readable (for terminals)
 
 ```bash
-atlas query "auth" --format human
+topo query "auth" --format human
 ```
 
 Produces a formatted table. Auto-selected when stdout is a terminal.
 
 ### Pipe detection
 
-When stdout is not a TTY, Atlas automatically switches to JSONL output and suppresses progress messages. Override with `--format`.
+When stdout is not a TTY, Topo automatically switches to JSONL output and suppresses progress messages. Override with `--format`.
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -446,14 +446,14 @@ A deep index adds three capabilities on top of the shallow scan:
 Build one with:
 
 ```bash
-atlas index --deep
+topo index --deep
 ```
 
-This creates `.atlas/index.bin` in your repository root.
+This creates `.topo/index.bin` in your repository root.
 
-**Two-pass architecture:** Atlas indexes thousands of files but typically selects ~30 for your context window. Parsing every file with a full AST is wasted work. Instead, indexing uses fast regex chunking to extract function names, types, and imports — the same data BM25F scoring consumes. Tree-sitter's 18 language grammars remain compiled and available for a future enrichment pass that deep-parses only the files that win scoring. This is the same pattern used by Sourcegraph (search-based vs precise navigation), IntelliJ (stub index vs full PSI), and rust-analyzer (lazy parsing). On Kubernetes (28k files), this cuts indexing time in half.
+**Two-pass architecture:** Topo indexes thousands of files but typically selects ~30 for your context window. Parsing every file with a full AST is wasted work. Instead, indexing uses fast regex chunking to extract function names, types, and imports — the same data BM25F scoring consumes. Tree-sitter's 18 language grammars remain compiled and available for a future enrichment pass that deep-parses only the files that win scoring. This is the same pattern used by Sourcegraph (search-based vs precise navigation), IntelliJ (stub index vs full PSI), and rust-analyzer (lazy parsing). On Kubernetes (28k files), this cuts indexing time in half.
 
-**Incremental updates:** When you re-run `atlas index --deep`, only files whose SHA-256 has changed get re-indexed. Unchanged files carry forward from the existing index. File processing runs in parallel across all available cores via `rayon`.
+**Incremental updates:** When you re-run `topo index --deep`, only files whose SHA-256 has changed get re-indexed. Unchanged files carry forward from the existing index. File processing runs in parallel across all available cores via `rayon`.
 
 **Supported languages for chunking (regex for indexing, tree-sitter for enrichment):**
 
@@ -478,7 +478,7 @@ This creates `.atlas/index.bin` in your repository root.
 | <img src="https://cdn.simpleicons.org/php/777BB4" height="14" /> PHP | functions | `class`, `interface`, `trait`, `enum` | `use` | — |
 | <img src="https://cdn.simpleicons.org/r/276DC3" height="14" /> R | functions | — | — | — |
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -510,20 +510,20 @@ Scoring and rendering are negligible — the bottleneck is file I/O.
 Run benchmarks yourself:
 
 ```bash
-cargo bench -p atlas-cli
+cargo bench -p topo-cli
 ```
 
 ### Polyglot and PageRank benchmarks
 
 See **[BENCHMARKS.md](BENCHMARKS.md)** for detailed results across Kubernetes (28k Go files), Discourse (16k Ruby+JS files), and Mastodon (9k Ruby+TS files) — including before/after comparisons of PageRank scoring on polyglot repos.
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
 ## Architecture
 
-Atlas is a Cargo workspace with 7 focused crates:
+Topo is a Cargo workspace with 7 focused crates:
 
 ```
                     +-------------+
@@ -552,13 +552,13 @@ Atlas is a Cargo workspace with 7 focused crates:
 
 | Crate | Purpose |
 |-------|---------|
-| `atlas-core` | Domain types, traits, errors, token budget |
-| `atlas-scanner` | File walking, gitignore, SHA-256 hashing |
-| `atlas-index` | Deep index builder, rkyv serialization, incremental merge |
-| `atlas-score` | BM25F, heuristic, hybrid, PageRank, git recency, RRF fusion |
-| `atlas-render` | JSONL v0.3, JSON, human-readable output |
-| `atlas-treesit` | Code chunking (regex for indexing, tree-sitter for enrichment) |
-| `atlas-cli` | clap CLI, presets, commands |
+| `topo-core` | Domain types, traits, errors, token budget |
+| `topo-scanner` | File walking, gitignore, SHA-256 hashing |
+| `topo-index` | Deep index builder, rkyv serialization, incremental merge |
+| `topo-score` | BM25F, heuristic, hybrid, PageRank, git recency, RRF fusion |
+| `topo-render` | JSONL v0.3, JSON, human-readable output |
+| `topo-treesit` | Code chunking (regex for indexing, tree-sitter for enrichment) |
+| `topo-cli` | clap CLI, presets, commands |
 
 ### Built with
 
@@ -570,7 +570,7 @@ Atlas is a Cargo workspace with 7 focused crates:
 - [`serde`](https://docs.rs/serde) + [`serde_json`](https://docs.rs/serde_json) — Serialization
 - [`sha2`](https://docs.rs/sha2) — Content hashing
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -580,7 +580,7 @@ Atlas is a Cargo workspace with 7 focused crates:
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--root <path>` | `.` | Repository root (or set `ATLAS_ROOT`) |
+| `--root <path>` | `.` | Repository root (or set `TOPO_ROOT`) |
 | `--format <fmt>` | `auto` | Output format: `auto`, `json`, `jsonl`, `human` |
 | `--no-color` | `false` | Disable color output |
 | `-v` | `0` | Increase log verbosity (repeat for more) |
@@ -590,9 +590,9 @@ Atlas is a Cargo workspace with 7 focused crates:
 
 | Variable | Description |
 |----------|-------------|
-| `ATLAS_ROOT` | Default repository root path |
+| `TOPO_ROOT` | Default repository root path |
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -602,18 +602,18 @@ Atlas is a Cargo workspace with 7 focused crates:
 |---------|-------|-----|
 | Empty selection | No files matched the task | Broaden the task description or lower `--min-score` |
 | Too many files selected | Budget too large | Use `--max-bytes` or `--top` to limit results |
-| Stale results | Cached index from previous state | Run `atlas index --force` to rebuild |
+| Stale results | Cached index from previous state | Run `topo index --force` to rebuild |
 | Slow on large repos | First index builds from scratch | Subsequent runs use incremental updates |
 | JSONL output in terminal | Pipe detection thinks stdout isn't a TTY | Use `--format human` explicitly |
-| No deep index data | Ran `atlas index` without `--deep` | Re-run with `--deep` flag |
+| No deep index data | Ran `topo index` without `--deep` | Re-run with `--deep` flag |
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
 ## Contributing
 
-Contributions are welcome. Atlas follows these conventions:
+Contributions are welcome. Topo follows these conventions:
 
 - `cargo clippy -- -D warnings` must pass
 - `cargo fmt -- --check` must pass
@@ -631,7 +631,7 @@ cargo test --workspace
 
 See [DELIVERY.md](docs/DELIVERY.md) for the full roadmap and [SPEC.md](docs/SPEC.md) for the technical specification.
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -640,12 +640,12 @@ See [DELIVERY.md](docs/DELIVERY.md) for the full roadmap and [SPEC.md](docs/SPEC
 | Document | Description |
 |----------|-------------|
 | [BENCHMARKS](BENCHMARKS.md) | Performance and quality benchmarks across real-world repos |
-| [PRD](docs/PRD.md) | Product requirements — what Atlas is and who it's for |
+| [PRD](docs/PRD.md) | Product requirements — what Topo is and who it's for |
 | [SPEC](docs/SPEC.md) | Technical specification — architecture, data formats, APIs |
 | [RESEARCH](docs/RESEARCH.md) | Rust migration analysis and crate evaluation |
 | [DELIVERY](docs/DELIVERY.md) | Phased delivery plan with 42 issues across 8 phases |
 
-<p align="right">(<a href="#atlas">back to top</a>)</p>
+<p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
@@ -657,7 +657,7 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
 
 <div align="center">
 
-**[Report Bug](https://github.com/demwunz/atlas/issues) · [Request Feature](https://github.com/demwunz/atlas/issues)**
+**[Report Bug](https://github.com/demwunz/topo/issues) · [Request Feature](https://github.com/demwunz/topo/issues)**
 
 Made by [Fazal Khan](https://git.io/D)
 

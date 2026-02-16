@@ -5,13 +5,13 @@ strip = true
 
 [workspace]
 members = [
-    "crates/atlas-core",
-    "crates/atlas-scanner",
-    "crates/atlas-index",
-    "crates/atlas-score",
-    "crates/atlas-render",
-    "crates/atlas-treesit",
-    "crates/atlas-cli",
+    "crates/topo-core",
+    "crates/topo-scanner",
+    "crates/topo-index",
+    "crates/topo-score",
+    "crates/topo-render",
+    "crates/topo-treesit",
+    "crates/topo-cli",
 ]
 resolver = "2"
 
@@ -21,7 +21,7 @@ edition = "2024"
 authors = ["Fazal Majid"]
 license = "MIT"
 description = "Fast codebase indexer and file selector for LLMs"
-repository = "https://github.com/demwunz/atlas"
+repository = "https://github.com/demwunz/topo"
 
 [workspace.dependencies]
 # Shared dependencies — crates opt in via `dep.workspace = true`
@@ -66,10 +66,10 @@ tree-sitter-php = "0.24"
 tree-sitter-r = "1"
 
 # Internal crates
-atlas-core = { path = "crates/atlas-core", version = "0.1.0" }
-atlas-scanner = { path = "crates/atlas-scanner", version = "0.1.0" }
-atlas-index = { path = "crates/atlas-index", version = "0.1.0" }
-atlas-score = { path = "crates/atlas-score", version = "0.1.0" }
-atlas-render = { path = "crates/atlas-render", version = "0.1.0" }
-atlas-treesit = { path = "crates/atlas-treesit", version = "0.1.0" }
-atlas-cli = { path = "crates/atlas-cli", version = "0.1.0" }
+topo-core = { path = "crates/topo-core", version = "0.1.0" }
+topo-scanner = { path = "crates/topo-scanner", version = "0.1.0" }
+topo-index = { path = "crates/topo-index", version = "0.1.0" }
+topo-score = { path = "crates/topo-score", version = "0.1.0" }
+topo-render = { path = "crates/topo-render", version = "0.1.0" }
+topo-treesit = { path = "crates/topo-treesit", version = "0.1.0" }
+topo-cli = { path = "crates/topo-cli", version = "0.1.0" }
