@@ -159,7 +159,7 @@ fn build_file_entry(info: &FileInfo, content: &str) -> FileEntry {
 
 /// Tokenize a file path into search terms.
 fn tokenize_path(path: &str) -> Vec<String> {
-    path.split(['/', '.', '-', '_'])
+    path.split(['/', '\\', '.', '-', '_'])
         .flat_map(split_camel_case)
         .filter(|t| t.len() >= 2)
         .map(|t| t.to_lowercase())
@@ -462,6 +462,16 @@ type Config struct {
         assert!(tokens.contains(&"src".to_string()));
         assert!(tokens.contains(&"auth".to_string()));
         assert!(tokens.contains(&"middleware".to_string()));
+    }
+
+    #[test]
+    fn tokenize_path_windows_separators() {
+        let tokens = tokenize_path(r"src\auth\middleware.rs");
+        assert!(tokens.contains(&"src".to_string()));
+        assert!(tokens.contains(&"auth".to_string()));
+        assert!(tokens.contains(&"middleware".to_string()));
+        // Should produce same tokens as Unix path
+        assert_eq!(tokens, tokenize_path("src/auth/middleware.rs"));
     }
 
     #[test]

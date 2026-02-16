@@ -74,7 +74,7 @@ fn role_score(role: FileRole) -> f64 {
 
 /// Score inversely proportional to directory depth. Shallower = better.
 fn depth_score(path: &str) -> f64 {
-    let depth = path.matches('/').count();
+    let depth = path.matches(['/', '\\']).count();
     match depth {
         0 => 1.0,
         1 => 0.9,
@@ -87,7 +87,7 @@ fn depth_score(path: &str) -> f64 {
 
 /// Bonus for well-known source directories.
 fn wellknown_score(path: &str) -> f64 {
-    let first_component = path.split('/').next().unwrap_or("");
+    let first_component = path.split(['/', '\\']).next().unwrap_or("");
     match first_component {
         "src" | "lib" | "cmd" | "pkg" | "app" | "internal" | "crates" => 1.0,
         "bin" | "server" | "api" | "core" | "modules" => 0.8,
@@ -107,5 +107,37 @@ fn size_score(size: u64) -> f64 {
         20_001..=100_000 => 0.5,
         100_001..=500_000 => 0.2,
         _ => 0.05,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn depth_score_windows_paths() {
+        // Backslash separators should count the same as forward slashes
+        assert_eq!(depth_score("file.rs"), depth_score("file.rs"));
+        assert_eq!(depth_score(r"src\file.rs"), depth_score("src/file.rs"));
+        assert_eq!(
+            depth_score(r"src\auth\middleware.rs"),
+            depth_score("src/auth/middleware.rs")
+        );
+    }
+
+    #[test]
+    fn wellknown_score_windows_paths() {
+        assert_eq!(
+            wellknown_score(r"src\main.rs"),
+            wellknown_score("src/main.rs")
+        );
+        assert_eq!(
+            wellknown_score(r"lib\utils.rs"),
+            wellknown_score("lib/utils.rs")
+        );
+        assert_eq!(
+            wellknown_score(r"vendor\dep.rs"),
+            wellknown_score("vendor/dep.rs")
+        );
     }
 }

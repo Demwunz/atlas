@@ -16,7 +16,9 @@ impl Tokenizer {
         let mut tokens = Vec::new();
 
         // Split on whitespace and common separators
-        for word in input.split(|c: char| c.is_whitespace() || c == '/' || c == '.' || c == '-') {
+        for word in input
+            .split(|c: char| c.is_whitespace() || c == '/' || c == '\\' || c == '.' || c == '-')
+        {
             if word.is_empty() {
                 continue;
             }
@@ -86,4 +88,32 @@ fn split_camel_case(s: &str) -> Vec<&str> {
 
 fn is_stop_word(word: &str) -> bool {
     STOP_WORDS.binary_search(&word).is_ok()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tokenize_unix_path() {
+        let tokens = Tokenizer::tokenize("src/auth/middleware.rs");
+        assert!(tokens.contains(&"src".to_string()));
+        assert!(tokens.contains(&"auth".to_string()));
+        assert!(tokens.contains(&"middleware".to_string()));
+    }
+
+    #[test]
+    fn tokenize_windows_path() {
+        let tokens = Tokenizer::tokenize(r"src\auth\middleware.rs");
+        assert!(tokens.contains(&"src".to_string()));
+        assert!(tokens.contains(&"auth".to_string()));
+        assert!(tokens.contains(&"middleware".to_string()));
+    }
+
+    #[test]
+    fn tokenize_windows_and_unix_paths_match() {
+        let unix = Tokenizer::tokenize("src/auth/middleware.rs");
+        let windows = Tokenizer::tokenize(r"src\auth\middleware.rs");
+        assert_eq!(unix, windows);
+    }
 }

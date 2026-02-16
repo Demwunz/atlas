@@ -66,10 +66,10 @@ tree-sitter-php = "0.24"
 tree-sitter-r = "1"
 
 # Internal crates
-atlas-core = { path = "crates/atlas-core" }
-atlas-scanner = { path = "crates/atlas-scanner" }
-atlas-index = { path = "crates/atlas-index" }
-atlas-score = { path = "crates/atlas-score" }
-atlas-render = { path = "crates/atlas-render" }
-atlas-treesit = { path = "crates/atlas-treesit" }
-atlas-cli = { path = "crates/atlas-cli" }
+atlas-core = { path = "crates/atlas-core", version = "0.1.0" }
+atlas-scanner = { path = "crates/atlas-scanner", version = "0.1.0" }
+atlas-index = { path = "crates/atlas-index", version = "0.1.0" }
+atlas-score = { path = "crates/atlas-score", version = "0.1.0" }
+atlas-render = { path = "crates/atlas-render", version = "0.1.0" }
+atlas-treesit = { path = "crates/atlas-treesit", version = "0.1.0" }
+atlas-cli = { path = "crates/atlas-cli", version = "0.1.0" }

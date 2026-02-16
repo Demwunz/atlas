@@ -26,6 +26,11 @@ class Atlas < Formula
   end
 
   on_linux do
+    on_arm do
+      url "https://github.com/demwunz/atlas/releases/download/v#{version}/atlas-v#{version}-aarch64-unknown-linux-gnu.tar.gz"
+      sha256 "PLACEHOLDER_SHA256_ARM64_LINUX"
+    end
+
     on_intel do
       url "https://github.com/demwunz/atlas/releases/download/v#{version}/atlas-v#{version}-x86_64-unknown-linux-gnu.tar.gz"
       sha256 "PLACEHOLDER_SHA256_X86_64_LINUX"
