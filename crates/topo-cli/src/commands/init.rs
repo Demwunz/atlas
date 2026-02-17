@@ -6,6 +6,7 @@ use std::path::Path;
 const AGENTS_MD: &str = include_str!("../../templates/AGENTS.md");
 const CURSOR_TOPO_MD: &str = include_str!("../../templates/cursor-topo.md");
 const COPILOT_INSTRUCTIONS_MD: &str = include_str!("../../templates/copilot-instructions.md");
+const CLAUDE_MD_SECTION: &str = include_str!("../../templates/claude-md-section.md");
 
 enum WriteResult {
     Created,
@@ -20,6 +21,53 @@ fn write_template(path: &Path, content: &str, force: bool) -> Result<WriteResult
         fs::create_dir_all(parent)?;
     }
     fs::write(path, content)?;
+    Ok(WriteResult::Created)
+}
+
+const TOPO_START: &str = "<!-- topo:start -->";
+const TOPO_END: &str = "<!-- topo:end -->";
+
+fn inject_claude_md(path: &Path, section: &str, force: bool) -> Result<WriteResult> {
+    let content = if path.exists() {
+        fs::read_to_string(path)?
+    } else {
+        String::new()
+    };
+
+    if let Some(start) = content.find(TOPO_START) {
+        if !force {
+            return Ok(WriteResult::Skipped);
+        }
+        // Replace existing section (inclusive of markers)
+        let end = content[start..]
+            .find(TOPO_END)
+            .map(|i| start + i + TOPO_END.len())
+            .unwrap_or(content.len());
+        let mut new_content = String::with_capacity(content.len());
+        new_content.push_str(&content[..start]);
+        new_content.push_str(section.trim_end());
+        // Preserve anything after the old end marker
+        let after = &content[end..];
+        if !after.is_empty() {
+            new_content.push_str(after);
+        } else {
+            new_content.push('\n');
+        }
+        fs::write(path, new_content)?;
+    } else if content.is_empty() {
+        // New file — just write the section
+        fs::write(path, section)?;
+    } else {
+        // Existing file without markers — append
+        let mut new_content = content;
+        if !new_content.ends_with('\n') {
+            new_content.push('\n');
+        }
+        new_content.push('\n');
+        new_content.push_str(section);
+        fs::write(path, new_content)?;
+    }
+
     Ok(WriteResult::Created)
 }
 
@@ -119,6 +167,21 @@ pub fn run(cli: &Cli, force: bool) -> Result<()> {
         println!("  Skipped .github/copilot-instructions.md (no .github/ directory)");
     }
 
+    // CLAUDE.md — inject topo section (never overwrite user content)
+    let claude_path = root.join("CLAUDE.md");
+    match inject_claude_md(&claude_path, CLAUDE_MD_SECTION, force)? {
+        WriteResult::Created => {
+            if !quiet {
+                println!("  Created CLAUDE.md (topo section)");
+            }
+        }
+        WriteResult::Skipped => {
+            if !quiet {
+                println!("  Skipped CLAUDE.md (topo section already present, use --force to update)");
+            }
+        }
+    }
+
     if !quiet {
         println!();
         check_topo_on_path();
@@ -175,5 +238,53 @@ mod tests {
         let result = write_template(&path, "nested", false).unwrap();
         assert!(matches!(result, WriteResult::Created));
         assert_eq!(fs::read_to_string(&path).unwrap(), "nested");
+    }
+
+    #[test]
+    fn inject_claude_md_creates_new_file() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("CLAUDE.md");
+        let result = inject_claude_md(&path, CLAUDE_MD_SECTION, false).unwrap();
+        assert!(matches!(result, WriteResult::Created));
+        let content = fs::read_to_string(&path).unwrap();
+        assert!(content.contains(TOPO_START));
+        assert!(content.contains(TOPO_END));
+        assert!(content.contains("topo quick"));
+    }
+
+    #[test]
+    fn inject_claude_md_appends_to_existing() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("CLAUDE.md");
+        fs::write(&path, "# My Project\n\nExisting content.\n").unwrap();
+        let result = inject_claude_md(&path, CLAUDE_MD_SECTION, false).unwrap();
+        assert!(matches!(result, WriteResult::Created));
+        let content = fs::read_to_string(&path).unwrap();
+        assert!(content.starts_with("# My Project"));
+        assert!(content.contains(TOPO_START));
+        assert!(content.contains(TOPO_END));
+    }
+
+    #[test]
+    fn inject_claude_md_skips_when_present() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("CLAUDE.md");
+        fs::write(&path, format!("# Project\n\n{CLAUDE_MD_SECTION}")).unwrap();
+        let result = inject_claude_md(&path, CLAUDE_MD_SECTION, false).unwrap();
+        assert!(matches!(result, WriteResult::Skipped));
+    }
+
+    #[test]
+    fn inject_claude_md_force_replaces() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("CLAUDE.md");
+        let old_section = "<!-- topo:start -->\nold content\n<!-- topo:end -->\n";
+        fs::write(&path, format!("# Project\n\n{old_section}")).unwrap();
+        let result = inject_claude_md(&path, CLAUDE_MD_SECTION, true).unwrap();
+        assert!(matches!(result, WriteResult::Created));
+        let content = fs::read_to_string(&path).unwrap();
+        assert!(!content.contains("old content"));
+        assert!(content.contains("topo quick"));
+        assert!(content.starts_with("# Project"));
     }
 }
