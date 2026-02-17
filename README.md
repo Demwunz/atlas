@@ -130,17 +130,18 @@ Make every AI coding assistant use Topo for file discovery with one command:
 topo init
 ```
 
-This creates instruction files that tell AI assistants to prefer `topo_query` over grep/find/glob:
+This creates instruction files that tell AI assistants to run `topo quick` via shell before grep/find/glob. It also checks that `topo` is on your PATH so assistants can actually call it:
 
 | File | Purpose |
 |------|---------|
 | `AGENTS.md` | Cross-tool instructions (Codex, Claude Code, Jules, Cursor) |
+| `CLAUDE.md` | Injects a topo-managed section (preserves your existing content) |
 | `.cursor/rules/topo.md` | Cursor-specific rules (auto-applied) |
 | `.github/copilot-instructions.md` | GitHub Copilot instructions (if `.github/` exists) |
 
-Existing files are not overwritten. Use `topo init --force` to replace them.
+Existing files are not overwritten. Use `topo init --force` to replace them. `CLAUDE.md` is special — it injects a marked section rather than overwriting, so your project instructions are preserved.
 
-For best results, combine with the MCP server config above — `topo init` provides the instructions, MCP provides the tools.
+For tools without shell access, combine with the [MCP server](#mcp-server) config above.
 
 <p align="right">(<a href="#topo">back to top</a>)</p>
 
