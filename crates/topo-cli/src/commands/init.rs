@@ -23,6 +23,44 @@ fn write_template(path: &Path, content: &str, force: bool) -> Result<WriteResult
     Ok(WriteResult::Created)
 }
 
+fn check_topo_on_path() {
+    let cmd = if cfg!(windows) {
+        std::process::Command::new("where.exe")
+            .arg("topo")
+            .output()
+    } else {
+        std::process::Command::new("which")
+            .arg("topo")
+            .output()
+    };
+
+    match cmd {
+        Ok(output) if output.status.success() => {
+            let path = String::from_utf8_lossy(&output.stdout)
+                .lines()
+                .next()
+                .unwrap_or_default()
+                .to_string();
+            println!("topo found on PATH: {path}");
+            println!("Your AI assistant can now run `topo quick \"task\"` via shell.");
+        }
+        _ => {
+            println!("Warning: topo is not on PATH.");
+            println!("Install it so your AI assistant can run `topo quick \"task\"`:");
+            println!();
+            if cfg!(target_os = "macos") {
+                println!("  brew install demwunz/tap/topo    # Homebrew");
+            }
+            println!("  cargo install topo-cli            # Cargo");
+            println!("  curl -fsSL https://topo.sh | sh   # Shell script");
+        }
+    }
+
+    println!();
+    println!("Optional: for tools without shell access, topo also runs as an MCP server.");
+    println!("See https://github.com/demwunz/topo#mcp for setup instructions.");
+}
+
 pub fn run(cli: &Cli, force: bool) -> Result<()> {
     let root = cli.repo_root()?;
     let quiet = cli.is_quiet();
@@ -83,16 +121,7 @@ pub fn run(cli: &Cli, force: bool) -> Result<()> {
 
     if !quiet {
         println!();
-        println!("To complete setup, add Topo as an MCP server in your AI assistant:");
-        println!();
-        println!("  {{");
-        println!("    \"mcpServers\": {{");
-        println!("      \"topo\": {{");
-        println!("        \"command\": \"topo\",");
-        println!("        \"args\": [\"--root\", \".\", \"mcp\"]");
-        println!("      }}");
-        println!("    }}");
-        println!("  }}");
+        check_topo_on_path();
     }
 
     Ok(())
