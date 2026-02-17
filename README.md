@@ -23,9 +23,9 @@
 
 LLMs are only as good as the context you give them. But codebases have thousands of files — and you can't paste them all into a prompt.
 
-So you guess. You manually pick files, hope you didn't miss a critical dependency, and wonder why the LLM still hallucinates. Too little context and it makes things up. Too much and it loses the plot.
+A typical workaround is chaining grep and glob queries, guessing at naming conventions, and hoping nothing was missed. Every new task is a cold start — rediscovering the codebase before any real work begins.
 
-**Topo fixes this.** One command indexes your repo, scores every file against your task, and outputs exactly what the LLM needs — within your token budget. Kubernetes-sized repos (28k files) index in under 4 seconds. Small repos finish in milliseconds.
+**Topo solves the cold-start problem.** One command indexes your repo, scores every file against your task, and outputs exactly what the LLM needs — within your token budget. No more manual file discovery. Kubernetes-sized repos (28k files) index in under 4 seconds. Small repos finish in milliseconds.
 
 ### Who is this for?
 
