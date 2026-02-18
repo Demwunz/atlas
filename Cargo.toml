@@ -16,9 +16,9 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.2"
 edition = "2024"
-authors = ["Fazal Majid"]
+authors = ["Fazal Khan"]
 license = "MIT"
 description = "Fast codebase indexer and file selector for LLMs"
 repository = "https://github.com/demwunz/topo"
@@ -66,10 +66,10 @@ tree-sitter-php = "0.24"
 tree-sitter-r = "1"
 
 # Internal crates
-topo-core = { path = "crates/topo-core", version = "0.1.0" }
-topo-scanner = { path = "crates/topo-scanner", version = "0.1.0" }
-topo-index = { path = "crates/topo-index", version = "0.1.0" }
-topo-score = { path = "crates/topo-score", version = "0.1.0" }
-topo-render = { path = "crates/topo-render", version = "0.1.0" }
-topo-treesit = { path = "crates/topo-treesit", version = "0.1.0" }
-topo-cli = { path = "crates/topo-cli", version = "0.1.0" }
+topo-core = { path = "crates/topo-core", version = "0.1.2" }
+topo-scanner = { path = "crates/topo-scanner", version = "0.1.2" }
+topo-index = { path = "crates/topo-index", version = "0.1.2" }
+topo-score = { path = "crates/topo-score", version = "0.1.2" }
+topo-render = { path = "crates/topo-render", version = "0.1.2" }
+topo-treesit = { path = "crates/topo-treesit", version = "0.1.2" }
+topo-cli = { path = "crates/topo-cli", version = "0.1.2" }
