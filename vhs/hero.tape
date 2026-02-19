@@ -22,8 +22,8 @@ Sleep 300ms
 Enter
 Sleep 1s
 
-# Index the repo with deep mode
-Type "topo index --deep"
+# Set up AI assistants + Claude Code hooks
+Type "topo init --force"
 Sleep 300ms
 Enter
 Sleep 3s
@@ -34,14 +34,14 @@ Sleep 300ms
 Enter
 Sleep 4s
 
-# Inspect the index for stats
-Type "topo inspect"
+# Show compact format (what hooks inject)
+Type 'topo quick "scoring engine" --format compact --top 5'
 Sleep 300ms
 Enter
 Sleep 3s
 
-# Show machine-readable capabilities
-Type "topo describe --format json"
+# Show context savings
+Type "topo gain"
 Sleep 300ms
 Enter
 Sleep 3s

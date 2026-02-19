@@ -28,8 +28,8 @@ Sleep 300ms
 Enter
 Sleep 3s
 
-# Quick with token budget
-Type 'topo quick "add retry logic to API calls" --max-tokens 4000 --format human'
+# Compact output — minimal tokens, used by Claude Code hooks
+Type 'topo quick "add retry logic to API calls" --format compact --top 5'
 Sleep 300ms
 Enter
 Sleep 3s

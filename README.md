@@ -152,6 +152,8 @@ To skip hook installation: `topo init --hooks false`.
 
 For tools without shell access, combine with the [MCP server](#mcp-server) config above.
 
+![topo init demo](vhs/init.gif)
+
 <p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
