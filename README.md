@@ -19,37 +19,23 @@
 
 ---
 
-**The right files. In seconds. Every time.**
+**Instant, accurate file selection for LLM context.**
 
-Topo scores every file in your repo against your task — using text relevance, path structure, import graphs, git history, and file roles — and packs the top results into your token budget. One command replaces the grep-and-guess ritual that starts every AI coding session.
+Topo scores every file in your codebase against a plain-English task and returns ranked, token-budgeted context — not search results. Vague input, precise output. Describe "auth middleware" and get back the implementation, its dependencies, and the config that wires it up — even when none of them match your search terms.
 
-- Indexes 28,000 files in under 4 seconds. Small repos finish in milliseconds
-- Surfaces structurally critical files that no keyword search would find — via PageRank over cross-language import graphs
-- Fuses five independent signals with Reciprocal Rank Fusion. No single signal decides alone
+Results arrive in milliseconds. Re-indexes skip unchanged files, so even large codebases stay fast after the first run.
 
 <p align="right">(<a href="#topo">back to top</a>)</p>
 
 ---
 
-### Who is this for?
+## Features
 
-- **Solo devs using AI assistants** — stop manually pasting files into Claude, Cursor, or Copilot. Topo picks the right ones for you
-- **Teams where every AI task starts with "which files do I need?"** — eliminate the repeated context-building ritual
-- **LLM agent and tool builders** — deterministic, machine-readable file selection via JSONL or JSON. 18 languages, no guessing
-- **Anyone hitting token limits** — precise budget controls (`--max-tokens`, `--max-bytes`) so you fill the window with signal, not noise
-- **Automation pipelines** — scriptable context for code review, PR summaries, or doc generation
-
-<p align="right">(<a href="#topo">back to top</a>)</p>
-
----
-
-## How Topo Helps
-
-- ⚡ **28,000 files scored in under 4 seconds** — incremental updates via SHA-256 skip unchanged files, so re-indexes are near-instant. Small repos finish in milliseconds
-- 🎯 **Multi-signal accuracy** — BM25F text search + path heuristics + import graph PageRank + git history, fused with Reciprocal Rank Fusion. Discovers hub files no keyword search would find
-- 🎛️ **Precise token budgets** — `--max-bytes`, `--max-tokens`, `--min-score`, `--top` give exact control over what goes into the context window
+- ⚡ **Millisecond results** — small repos return instantly. 28,000-file codebases index in under 4 seconds. Changed files re-index automatically; unchanged files are skipped
+- 🎯 **Finds files keywords miss** — scores every file by text relevance, path structure, import relationships, git history, and file role. A hub module imported by 40 files ranks high even if its name has nothing to do with your task
+- 🎛️ **Precise token budgets** — `--max-tokens`, `--max-bytes`, `--top`, `--min-score`. Fill your context window with signal, not noise
 - 🔌 **Works with every AI tool** — native hooks for Claude Code, rules for Cursor, instructions for Copilot, MCP server for everything else. `topo init` sets them all up
-- 📦 **18 languages, zero dependencies** — single static binary. No runtime, no config, no API keys. Download and run
+- 📦 **Single binary, zero config** — 18 languages out of the box. No runtime, no API keys. Download and run
 
 <p align="right">(<a href="#topo">back to top</a>)</p>
 

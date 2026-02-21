@@ -1,4 +1,4 @@
-# Hero demo — end-to-end topo showcase
+# Hero demo — matches README intro: vague input, precise output, fast
 # Generates: vhs/hero.gif
 
 Output vhs/hero.gif
@@ -16,32 +16,32 @@ Set WindowBarSize 40
 Set Padding 20
 Set TypingSpeed 40ms
 
-# Show version
-Type "topo --version"
-Sleep 300ms
-Enter
-Sleep 1s
-
-# Set up AI assistants + Claude Code hooks
-Type "topo init --force"
-Sleep 300ms
-Enter
-Sleep 3s
-
-# Run quick command — the star of the show
-Type 'topo quick "refactor the scoring engine" --format human --top 10'
+# "Vague input, precise output" — the exact example from the README intro
+Type 'topo quick "auth middleware" --format human --top 10'
 Sleep 300ms
 Enter
 Sleep 4s
 
-# Show compact format (what hooks inject)
-Type 'topo quick "scoring engine" --format compact --top 5'
+# Precise token budgets — fill your context window with signal
+Type 'topo quick "auth middleware" --max-tokens 8000 --format compact'
 Sleep 300ms
 Enter
 Sleep 3s
 
-# Show context savings
-Type "topo gain"
+# Score breakdown — shows how files keywords miss get surfaced
+Type 'topo explain "auth middleware" --top 5'
+Sleep 300ms
+Enter
+Sleep 4s
+
+# Re-index is instant — unchanged files are skipped
+Type 'topo quick "add health check endpoint" --format human --top 5'
+Sleep 300ms
+Enter
+Sleep 3s
+
+# Works with every AI tool — one command sets them all up
+Type "topo init --force"
 Sleep 300ms
 Enter
 Sleep 3s
