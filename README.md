@@ -2,7 +2,7 @@
 
 # Topo
 
-**Smart file selection for LLMs. One command to go from codebase to context.**
+**Smart file selection for LLMs. Instant results. Precise selection. No wasted tokens.**
 
   <img src="https://img.shields.io/badge/Rust-000000?style=flat-square&logo=rust&logoColor=white" alt="Rust" />
   <img src="https://img.shields.io/badge/CLI-000000?style=flat-square&logo=windowsterminal&logoColor=white" alt="CLI" />
