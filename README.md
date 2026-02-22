@@ -19,11 +19,11 @@
 
 ---
 
-**Instant, accurate file selection for LLM context.**
+**Instant. Precise. Lean.**
 
-Topo scores every file in your codebase against a plain-English task and returns ranked, token-budgeted context — not search results. Vague input, precise output. Describe "auth middleware" and get back the implementation, its dependencies, and the config that wires it up — even when none of them match your search terms.
+Topo scores every file in your codebase against your task and returns ranked, token-budgeted context. Results arrive in milliseconds. Re-indexes skip unchanged files, so even large codebases stay fast. No API calls, no cloud.
 
-Results arrive in milliseconds. Re-indexes skip unchanged files, so even large codebases stay fast after the first run.
+Describe "auth middleware" and get back the implementation, its dependencies, and the config that wires it up — even when none of them match your search terms.
 
 <p align="right">(<a href="#topo">back to top</a>)</p>
 
