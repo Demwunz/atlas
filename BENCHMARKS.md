@@ -7,7 +7,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2024_edition-000000?style=for-the-badge&logo=rust)](https://www.rust-lang.org)
 [![Tests](https://img.shields.io/badge/tests-266_passing-brightgreen?style=for-the-badge)](#)
 
-[Index Performance](#-index-performance) · [Query Quality](#-query-quality-balanced-vs-deep) · [PageRank Impact](#-pagerank-impact-on-polyglot-repos) · [Language Coverage](#-import-extraction-coverage)
+[Index Performance](#-index-performance) · [Query Quality](#-query-quality-balanced-vs-deep) · [PageRank Impact](#-pagerank-impact-on-polyglot-repos) · [Language Coverage](#-import-extraction-coverage) · [Tool Comparison](COMPARISON.md)
 
 </div>
 
@@ -279,6 +279,6 @@ topo --root /tmp/mastodon-bench quick "notification push" --preset deep --format
 
 <div align="center">
 
-**[Back to README](README.md) · [Report Bug](https://github.com/demwunz/topo/issues) · [Request Feature](https://github.com/demwunz/topo/issues)**
+**[Back to README](README.md) · [Tool Comparison](COMPARISON.md) · [Report Bug](https://github.com/demwunz/topo/issues) · [Request Feature](https://github.com/demwunz/topo/issues)**
 
 </div>

@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black" alt="Linux" />
   <img src="https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white" alt="Windows" />
 
-[Quickstart](#quickstart) · [How It Works](#how-it-works) · [Commands](#commands) · [MCP Server](#mcp-server) · [AI Setup](#ai-assistant-setup) · [Installation](#installation)
+[Quickstart](#quickstart) · [Comparison](#how-topo-compares) · [How It Works](#how-it-works) · [Commands](#commands) · [MCP Server](#mcp-server) · [AI Setup](#ai-assistant-setup) · [Installation](#installation)
 
 ![Topo demo](vhs/hero.gif)
 
@@ -34,6 +34,22 @@ In practice: describe "auth middleware" and get back the implementation, its dep
 - ⚡ **Millisecond results** — small repos return instantly. 28k-file codebases index in under 4 seconds. Only changed files re-index
 - 🔌 **Powers any AI tool** — native hooks for Claude Code, rules for Cursor, instructions for Copilot, MCP server for everything else. One command sets them all up
 - 📦 **Single binary, fully local** — no runtime, no API keys, no cloud. Download and run
+
+<p align="right">(<a href="#topo">back to top</a>)</p>
+
+---
+
+## How Topo Compares
+
+| Capability | ripgrep | Sourcegraph | Cursor | aider | Copilot | **Topo** |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| AST-level semantic parsing | — | ✓ | partial | ✓ | undisclosed | **✓** |
+| Import graph + PageRank | — | — | — | ✓ | — | **✓** |
+| Multi-signal fusion | — | — | — | — | — | **✓** |
+| Token-budget control | — | — | — | ✓ | — | **✓** |
+| Fully offline, standalone CLI | ✓ | — | — | partial | — | **✓** |
+
+Topo occupies the gap between text search and AI editors — structural file selection with no cloud, no API keys, and no subscription. See **[COMPARISON.md](COMPARISON.md)** for the full breakdown including speed, quality, and cost.
 
 <p align="right">(<a href="#topo">back to top</a>)</p>
 
@@ -744,6 +760,7 @@ See [DELIVERY.md](docs/DELIVERY.md) for the full roadmap and [SPEC.md](docs/SPEC
 | Document | Description |
 |----------|-------------|
 | [BENCHMARKS](BENCHMARKS.md) | Performance and quality benchmarks across real-world repos |
+| [COMPARISON](COMPARISON.md) | Feature comparison with ripgrep, Sourcegraph, Cursor, aider, and Copilot |
 | [PRD](docs/PRD.md) | Product requirements — what Topo is and who it's for |
 | [SPEC](docs/SPEC.md) | Technical specification — architecture, data formats, APIs |
 | [RESEARCH](docs/RESEARCH.md) | Rust migration analysis and crate evaluation |
